@@ -1,0 +1,44 @@
+#!/usr/bin/env node
+'use strict';
+
+/**
+ * Command used to enrich csv source with meta info from a doi identifi
+ *
+ */
+const ezmesure = require('../index.js');
+const fs      = require('fs');
+const path    = require('path');
+const yargs   = require('yargs')
+  .usage('Send commands to ezMESURE' +
+    '\n  Usage: $0 <indexlist|indexinsert|indexdelete> [<args>]')
+  .alias('file', 'f')
+  .describe('file', 'A csv file to parse. If absent, will read from standard input.');
+let argv = yargs.argv;
+
+const defaultBaseUrl = 'https://localhost';
+const someSecretToken = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE0NjY1MTEwMDN9.DGDp0pb1DlydJDubf4HCbYzntFsl-zOeXdTD3mlhPzM';
+const testFile = path.join(__dirname, '/../test/test-sample.csv');
+let baseUrl = defaultBaseUrl;
+
+// show usage if --help option is used
+if (argv.help || argv.h) {
+  yargs.showHelp();
+  process.exit(0);
+}
+
+let options  = { extended: argv.extended || false };
+let command = argv._[0];
+ezmesure.authentication(someSecretToken);
+
+//console.log(argv);
+if (!command) {
+  yargs.showHelp();
+  console.error("Needs command");
+} else if ( command === "indexlist") {
+  ezmesure.indexlist({baseUrl: baseUrl}, (err, list) => {
+    if (err && err.statusCode === 401) {
+      throw new Error('Check your token');
+    }
+    console.log(ezmesure.getEzMesureIndex(list));
+  });
+}

@@ -9,6 +9,19 @@ exports.authentication = function(token) {
   options.strictSSL = false;
 };
 
+exports.isEzmesureIndex = function (element) {
+  return !element.startsWith('.');
+}
+
+exports.getEzMesureIndex = function (list) {
+  let ezMesureIndexList = Object.keys(list.indices).filter(this.isEzmesureIndex);
+  let ezMesureIndex = {};
+  ezMesureIndexList.forEach(function(index) {
+    ezMesureIndex[index] = list.indices[index].total.docs.count;
+  });
+  return ezMesureIndex;
+}
+
 function query(params, callback) {
 
   request(options, (err, res, body) => {

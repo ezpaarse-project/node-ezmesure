@@ -24,7 +24,8 @@
   "dependencies": {
     "chai": "^3.5.0",
     "mocha": "^2.5.3",
-    "request": "^2.65.0"
+    "request": "^2.65.0",
+    "yargs": "^4.8.1"
   },
   "devDependencies": {}
 }

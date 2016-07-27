@@ -2,16 +2,12 @@
 
 const request = require('request');
 const fs = require('fs');
-const baseUrl = 'https://localhost';
-const token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE0NjY1MTEwMDN9.DGDp0pb1DlydJDubf4HCbYzntFsl-zOeXdTD3mlhPzM';
-const options = {
-  headers: { 
-    'Authorization': 'Bearer ' + token
-  },
-  strictSSL: false
-};
-let params = {};
+let options = {};
 
+exports.authentication = function(token) {
+  options.headers = {'Authorization': `Bearer ${token}`};
+  options.strictSSL = false;
+};
 
 function query(params, callback) {
 
@@ -71,9 +67,9 @@ function queryinsert(params, callback) {
   );
 }
 
-exports.indexlist = function (callback) {
-  const service = "api/logs";
-  options.uri = encodeURI(`${baseUrl}/${service}`);
+exports.indexlist = function (params, callback) {
+  const service = 'api/logs';
+  options.uri = encodeURI(`${params.baseUrl}/${service}`);
   options.method = 'GET';
 
   if (typeof callback === 'function') { return query(params, callback); }
@@ -87,8 +83,8 @@ exports.indexlist = function (callback) {
 };
 
 exports.indexinsert = function (params, callback) {
-  const service = "api/logs";
-  options.uri = encodeURI(`${baseUrl}/${service}/${params.index}`);
+  const service = 'api/logs';
+  options.uri = encodeURI(`${params.baseUrl}/${service}/${params.index}`);
   options.method = 'POST';
 
   if (typeof callback === 'function') { return queryinsert(params, callback); }
@@ -102,8 +98,8 @@ exports.indexinsert = function (params, callback) {
 };
 
 exports.indexdelete = function (params, callback) {
-  const service = "api/logs";
-  options.uri = encodeURI(`${baseUrl}/${service}/${params.index}`);
+  const service = 'api/logs';
+  options.uri = encodeURI(`${params.baseUrl}/${service}/${params.index}`);
   options.method = 'DELETE';
 
   if (typeof callback === 'function') { return query(params, callback); }

@@ -1,23 +1,26 @@
 #!/usr/bin/env node
 'use strict';
-
+/*eslint no-console: 0 */
 /**
  * Command used to enrich csv source with meta info from a doi identifi
  *
  */
 const ezmesure = require('../index.js');
-const fs      = require('fs');
-const path    = require('path');
 const yargs   = require('yargs')
   .usage('Send commands to ezMESURE' +
-    '\n  Usage: $0 <indexlist|indexinsert|indexdelete> [<args>]')
-  .alias('file', 'f')
-  .describe('file', 'A csv file to parse. If absent, will read from standard input.');
+    '\n  Usage: $0 <indexList|indexInsert|indexDelete> [<args>]')
+  .alias('url', 'u')
+  .describe('url', 'ezMESURE URL API, like https://ezmesure-preprod.couperin.org')
+  .alias('token', 't')
+  .describe('token', 'JWT token needed for authentication')
+  .alias('index', 'i')
+  .describe('index', 'index concerned by the command, like univ-test')
+  .alias('ezpaarseFile', 'f')
+  .describe('ezpaarseFile', 'a csv file to insert. Have to be an ezPAARSE output.');
 let argv = yargs.argv;
 
 const defaultBaseUrl = 'https://localhost';
 const someSecretToken = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE0NjY1MTEwMDN9.DGDp0pb1DlydJDubf4HCbYzntFsl-zOeXdTD3mlhPzM';
-const testFile = path.join(__dirname, '/../test/test-sample.csv');
 let baseUrl = defaultBaseUrl;
 
 // show usage if --help option is used
@@ -26,19 +29,92 @@ if (argv.help || argv.h) {
   process.exit(0);
 }
 
-let options  = { extended: argv.extended || false };
+let transactions  = [];
+let nbtr = 0;
 let command = argv._[0];
+
 ezmesure.authentication(someSecretToken);
 
 //console.log(argv);
+
 if (!command) {
   yargs.showHelp();
-  console.error("Needs command");
-} else if ( command === "indexlist") {
-  ezmesure.indexlist({baseUrl: baseUrl}, (err, list) => {
-    if (err && err.statusCode === 401) {
-      throw new Error('Check your token');
+  console.error('Needs command');
+  return;
+} else if (command === 'indexbulk') {
+  console.error(`Command ${command} not implemented`);
+  transactions.push({command: 'indexList'});
+  transactions.push({command: 'indexInsert', index: 'univ-test', ezpaarseFile: '../Téléchargements/univ-fcomte_2016-07-08_15h56.job-ecs.csv'});
+  transactions.push({command: 'indexList'});
+  transactions.push({command: 'indexDelete', index: 'univ-test'});
+  transactions.push({command: 'indexList'});
+  transactions.push({command: 'indextest'});
+} else {
+  transactions.push({command: command, url: argv.url, token: argv.token, index: argv.index, ezpaarseFile: argv.ezpaarseFile});
+}
+
+
+function reports() {
+  console.log(`Transactions : ${nbtr}`);
+}
+
+action(reports);
+
+function action(callback) {
+  let transaction = transactions.shift();
+
+  if (!transaction) return callback();
+  nbtr++;
+  if (!transaction.command) {
+    yargs.showHelp();
+    console.error('Needs command');
+    action(callback);
+  }
+
+  switch(transaction.command) {
+  case 'indexList' :
+    ezmesure.indexList({baseUrl: baseUrl}, (err, list) => {
+      if (err && err.statusCode === 401) {
+        throw new Error('Check your token');
+      }
+      console.log(ezmesure.getEzMesureIndex(list));
+      action(callback);
+    });
+    break;
+  case 'indexInsert' :
+      // check parameters
+    if ( !transaction.ezpaarseFile ) {
+      throw new Error('indexInsert needs file parameter');
     }
-    console.log(ezmesure.getEzMesureIndex(list));
-  });
+    if ( !transaction.index) {
+      throw new Error('indexInsert needs index parameter');
+    }
+
+    ezmesure.indexInsert({baseUrl: baseUrl, index: transaction.index, file: transaction.ezpaarseFile}, (err, list) => {
+      if (err && err.statusCode === 401) {
+        throw new Error('Check your token');
+      }
+      console.log(list);
+      action(callback);
+    });
+    break;
+  case 'indexDelete' :
+      // check parameters
+    if ( !transaction.index) {
+      throw new Error('indexDelete needs index parameter');
+    }
+
+    ezmesure.indexDelete({baseUrl: baseUrl, index: transaction.index}, (err, list) => {
+      if (err && err.statusCode === 401) {
+        throw new Error('Check your token');
+      }
+      console.log(list);
+      action(callback);
+    });
+    break;
+  default :
+    console.error(`Command ${transaction.command} not implemented`);
+    action(callback);
+    break;
+  }
 }

@@ -13,7 +13,7 @@ ezmesure.authentication(someSecretToken);
 describe('ezMESURE', () => {
 
   it('should correctly show index list (@01)', done => {
-    ezmesure.indexlist({baseUrl: baseUrl}, (err, list) => {
+    ezmesure.indexList({baseUrl: baseUrl}, (err, list) => {
       if (err && err.statusCode === 401) {
         throw new Error('Check your token');
       }
@@ -23,7 +23,7 @@ describe('ezMESURE', () => {
     });
   });
   it('should correctly create index univ-test (@02)', done => {
-    ezmesure.indexinsert({baseUrl: baseUrl, index: 'univ-test', file: testFile}, (err, rep) => {
+    ezmesure.indexInsert({baseUrl: baseUrl, index: 'univ-test', file: testFile}, (err, rep) => {
       if (err && err.statusCode === 401) {
         throw new Error('Check your token');
       }
@@ -33,7 +33,7 @@ describe('ezMESURE', () => {
     });
   });
   it('should correctly delete index univ-test (@03)', done => {
-    ezmesure.indexdelete({baseUrl: baseUrl, index: 'univ-test'}, (err, rep) => {
+    ezmesure.indexDelete({baseUrl: baseUrl, index: 'univ-test'}, (err, rep) => {
       if (err && err.statusCode === 401) {
         throw new Error('Check your token');
       }

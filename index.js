@@ -14,7 +14,7 @@ exports.isEzmesureIndex = function (element) {
 }
 
 exports.getEzMesureIndex = function (list) {
-  let ezMesureIndexList = Object.keys(list.indices).filter(this.isEzmesureIndex);
+  let ezMesureIndexList = Object.keys(list.indices).filter(this.isEzmesureIndex).sort();
   let ezMesureIndex = {};
   ezMesureIndexList.forEach(function(index) {
     ezMesureIndex[index] = list.indices[index].total.docs.count;
@@ -80,7 +80,7 @@ function queryinsert(params, callback) {
   );
 }
 
-exports.indexlist = function (params, callback) {
+exports.indexList = function (params, callback) {
   const service = 'api/logs';
   options.uri = encodeURI(`${params.baseUrl}/${service}`);
   options.method = 'GET';
@@ -95,7 +95,7 @@ exports.indexlist = function (params, callback) {
   });
 };
 
-exports.indexinsert = function (params, callback) {
+exports.indexInsert = function (params, callback) {
   const service = 'api/logs';
   options.uri = encodeURI(`${params.baseUrl}/${service}/${params.index}`);
   options.method = 'POST';
@@ -110,7 +110,7 @@ exports.indexinsert = function (params, callback) {
   });
 };
 
-exports.indexdelete = function (params, callback) {
+exports.indexDelete = function (params, callback) {
   const service = 'api/logs';
   options.uri = encodeURI(`${params.baseUrl}/${service}/${params.index}`);
   options.method = 'DELETE';

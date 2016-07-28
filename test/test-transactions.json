@@ -1,0 +1,7 @@
+[
+  {"command": "indexList"},
+  {"command": "indexInsert", "index": "univ-test", "ezpaarseFile": "test/test-sample.csv"},
+  {"command": "indexList"},
+  {"command": "indexDelete", "index": "univ-test"},
+  {"command": "indexList"}
+]

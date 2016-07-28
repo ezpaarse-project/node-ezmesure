@@ -8,7 +8,7 @@
 const ezmesure = require('../index.js');
 const yargs   = require('yargs')
   .usage('Send commands to ezMESURE' +
-    '\n  Usage: $0 <indexList|indexInsert|indexDelete> [<args>]')
+    '\n  Usage: $0 <indexList|indexInsert|indexDelete|indexBulk> [<args>]')
   .alias('url', 'u')
   .describe('url', 'ezMESURE URL API, like https://ezmesure-preprod.couperin.org')
   .alias('token', 't')
@@ -16,7 +16,9 @@ const yargs   = require('yargs')
   .alias('index', 'i')
   .describe('index', 'index concerned by the command, like univ-test')
   .alias('ezpaarseFile', 'f')
-  .describe('ezpaarseFile', 'a csv file to insert. Have to be an ezPAARSE output.');
+  .describe('ezpaarseFile', 'a csv file to insert. Have to be an ezPAARSE output.')
+  .alias('transactionsFile', 't')
+  .describe('transactionsFile', 'a JSON file containing transactions to send to ezMESURE');
 let argv = yargs.argv;
 
 const defaultBaseUrl = 'https://localhost';
@@ -35,24 +37,24 @@ let command = argv._[0];
 
 ezmesure.authentication(someSecretToken);
 
-//console.log(argv);
+// console.log(argv);
 
 if (!command) {
   yargs.showHelp();
   console.error('Needs command');
   return;
-} else if (command === 'indexbulk') {
-  console.error(`Command ${command} not implemented`);
-  transactions.push({command: 'indexList'});
-  transactions.push({command: 'indexInsert', index: 'univ-test', ezpaarseFile: '../Téléchargements/univ-fcomte_2016-07-08_15h56.job-ecs.csv'});
-  transactions.push({command: 'indexList'});
-  transactions.push({command: 'indexDelete', index: 'univ-test'});
-  transactions.push({command: 'indexList'});
-  transactions.push({command: 'indextest'});
+} else if (command === 'indexBulk') {
+  // bulk transactions in a JSON file
+  //console.error(`Command ${command} not implemented`);
+  if ( !argv.transactionsFile ) {
+    throw new Error('indexBulk needs transactionsFile parameter');
+  }
+  const fs = require('fs');
+  transactions = JSON.parse(fs.readFileSync(argv.transactionsFile));
 } else {
+  // only one transaction via command parameter
   transactions.push({command: command, url: argv.url, token: argv.token, index: argv.index, ezpaarseFile: argv.ezpaarseFile});
 }
-
 
 function reports() {
   console.log(`Transactions : ${nbtr}`);
@@ -84,7 +86,7 @@ function action(callback) {
   case 'indexInsert' :
       // check parameters
     if ( !transaction.ezpaarseFile ) {
-      throw new Error('indexInsert needs file parameter');
+      throw new Error('indexInsert needs ezpaarseFile parameter');
     }
     if ( !transaction.index) {
       throw new Error('indexInsert needs index parameter');

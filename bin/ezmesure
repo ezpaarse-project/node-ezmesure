@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 'use strict';
-/*eslint no-console: 0 */
+/*eslint no-console: 0, no-sync: 0 */
 /**
  * Command used to enrich csv source with meta info from a doi identifi
  *
  */
+const fs = require('fs');
 const ezmesure = require('../index.js');
 const yargs   = require('yargs')
   .usage('Send commands to ezMESURE' +
@@ -49,7 +50,6 @@ if (!command) {
   if ( !argv.transactionsFile ) {
     throw new Error('indexBulk needs transactionsFile parameter');
   }
-  const fs = require('fs');
   transactions = JSON.parse(fs.readFileSync(argv.transactionsFile));
 } else {
   // only one transaction via command parameter

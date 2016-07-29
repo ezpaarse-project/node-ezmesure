@@ -11,6 +11,7 @@ let config = {};
 fs.accessSync(configFile);
 config = JSON.parse(fs.readFileSync(configFile));
 exports.config = config;
+exports.options = options;
 
 exports.authentication = function(token) {
   if (!token) { 

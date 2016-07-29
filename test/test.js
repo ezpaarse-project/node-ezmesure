@@ -4,16 +4,14 @@
 const path    = require('path');
 const expect  = require('chai').expect;
 const ezmesure = require('../index.js');
-const baseUrl = 'https://localhost';
-const someSecretToken = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE0NjY1MTEwMDN9.DGDp0pb1DlydJDubf4HCbYzntFsl-zOeXdTD3mlhPzM';
 const testFile = path.join(__dirname, '/test-sample.csv');
 
-ezmesure.authentication(someSecretToken);
+ezmesure.authentication(ezmesure.config.token);
 
 describe('ezMESURE', () => {
 
   it('should correctly show index list (@01)', done => {
-    ezmesure.indexList({baseUrl: baseUrl}, (err, list) => {
+    ezmesure.indexList({baseUrl: ezmesure.config.baseUrl}, (err, list) => {
       if (err && err.statusCode === 401) {
         throw new Error('Check your token');
       }
@@ -23,7 +21,7 @@ describe('ezMESURE', () => {
     });
   });
   it('should correctly create index univ-test (@02)', done => {
-    ezmesure.indexInsert({baseUrl: baseUrl, index: 'univ-test', file: testFile}, (err, rep) => {
+    ezmesure.indexInsert({baseUrl: ezmesure.config.baseUrl, index: 'univ-test', file: testFile}, (err, rep) => {
       if (err && err.statusCode === 401) {
         throw new Error('Check your token');
       }
@@ -33,7 +31,7 @@ describe('ezMESURE', () => {
     });
   });
   it('should correctly delete index univ-test (@03)', done => {
-    ezmesure.indexDelete({baseUrl: baseUrl, index: 'univ-test'}, (err, rep) => {
+    ezmesure.indexDelete({baseUrl: ezmesure.config.baseUrl, index: 'univ-test'}, (err, rep) => {
       if (err && err.statusCode === 401) {
         throw new Error('Check your token');
       }

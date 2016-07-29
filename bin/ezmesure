@@ -22,9 +22,6 @@ const yargs   = require('yargs')
   .describe('transactionsFile', 'a JSON file containing transactions to send to ezMESURE');
 let argv = yargs.argv;
 
-const defaultBaseUrl = 'https://localhost';
-const someSecretToken = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE0NjY1MTEwMDN9.DGDp0pb1DlydJDubf4HCbYzntFsl-zOeXdTD3mlhPzM';
-let baseUrl = defaultBaseUrl;
 
 // show usage if --help option is used
 if (argv.help || argv.h) {
@@ -36,24 +33,26 @@ let transactions  = [];
 let nbtr = 0;
 let command = argv._[0];
 
-ezmesure.authentication(someSecretToken);
+let baseUrl = ezmesure.config.baseUrl;
+ezmesure.authentication(ezmesure.config.token);
 
 // console.log(argv);
 
 if (!command) {
   yargs.showHelp();
   console.error('Needs command');
-  return;
+  process.exit(1);
 } else if (command === 'indexBulk') {
   // bulk transactions in a JSON file
   //console.error(`Command ${command} not implemented`);
   if ( !argv.transactionsFile ) {
-    throw new Error('indexBulk needs transactionsFile parameter');
+    console.error('indexBulk needs transactionsFile parameter');
+    process.exit(1);
   }
   transactions = JSON.parse(fs.readFileSync(argv.transactionsFile));
 } else {
   // only one transaction via command parameter
-  transactions.push({command: command, url: argv.url, token: argv.token, index: argv.index, ezpaarseFile: argv.ezpaarseFile});
+  transactions.push({command: command, baseUrl: argv.baseUrl, token: argv.token, index: argv.index, ezpaarseFile: argv.ezpaarseFile});
 }
 
 function reports() {
@@ -70,14 +69,23 @@ function action(callback) {
   if (!transaction.command) {
     yargs.showHelp();
     console.error('Needs command');
-    action(callback);
+    process.exit(1);
+  }
+
+  if (transaction.baseUrl && transaction.token) {
+    // override default authentication if found in transaction
+    ezmesure.options.headers = {'Authorization': `Bearer ${transaction.token}`};
+    baseUrl = transaction.baseUrl;
+  } else {
+    baseUrl = ezmesure.config.baseUrl;
   }
 
   switch(transaction.command) {
   case 'indexList' :
     ezmesure.indexList({baseUrl: baseUrl}, (err, list) => {
       if (err && err.statusCode === 401) {
-        throw new Error('Check your token');
+        console.error('Check your token');
+        process.exit(1);
       }
       console.log(ezmesure.getEzMesureIndex(list));
       action(callback);
@@ -86,15 +94,18 @@ function action(callback) {
   case 'indexInsert' :
       // check parameters
     if ( !transaction.ezpaarseFile ) {
-      throw new Error('indexInsert needs ezpaarseFile parameter');
+      console.error('indexInsert needs ezpaarseFile parameter');
+      process.exit(1);
     }
     if ( !transaction.index) {
-      throw new Error('indexInsert needs index parameter');
+      console.error('indexInsert needs index parameter');
+      process.exit(1);
     }
 
     ezmesure.indexInsert({baseUrl: baseUrl, index: transaction.index, file: transaction.ezpaarseFile}, (err, list) => {
       if (err && err.statusCode === 401) {
-        throw new Error('Check your token');
+        console.error('Check your token');
+        process.exit(1);
       }
       console.log(list);
       action(callback);
@@ -102,13 +113,15 @@ function action(callback) {
     break;
   case 'indexDelete' :
       // check parameters
-    if ( !transaction.index) {
-      throw new Error('indexDelete needs index parameter');
+    if (!transaction.index) {
+      console.error('indexDelete needs index parameter');
+      process.exit(1);
     }
 
     ezmesure.indexDelete({baseUrl: baseUrl, index: transaction.index}, (err, list) => {
       if (err && err.statusCode === 401) {
-        throw new Error('Check your token');
+        console.error('Check your token');
+        process.exit(1);
       }
       console.log(list);
       action(callback);

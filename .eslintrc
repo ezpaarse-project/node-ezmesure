@@ -14,7 +14,7 @@
     "callback-return": [2, ["callback", "cb", "next"]],
     "global-require": 2,
     "no-path-concat": 2,
-    "no-sync": 2,
+    "no-sync": 0,
     "no-var": 2,
     "no-throw-literal": 2,
     "no-sequences": 2,

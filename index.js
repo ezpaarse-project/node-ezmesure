@@ -2,7 +2,15 @@
 
 const request = require('request');
 const fs = require('fs');
+const path    = require('path');
+const configFile = path.join(__dirname, '/.ezmesurerc');
 let options = {};
+let config = {};
+
+// load local configuration
+fs.accessSync(configFile);
+config = JSON.parse(fs.readFileSync(configFile));
+exports.config = config;
 
 exports.authentication = function(token) {
   options.headers = {'Authorization': `Bearer ${token}`};
@@ -11,16 +19,16 @@ exports.authentication = function(token) {
 
 exports.isEzmesureIndex = function (element) {
   return !element.startsWith('.');
-}
+};
 
 exports.getEzMesureIndex = function (list) {
   let ezMesureIndexList = Object.keys(list.indices).filter(this.isEzmesureIndex).sort();
   let ezMesureIndex = {};
-  ezMesureIndexList.forEach(function(index) {
+  ezMesureIndexList.forEach((index) => {
     ezMesureIndex[index] = list.indices[index].total.docs.count;
   });
   return ezMesureIndex;
-}
+};
 
 function query(params, callback) {
 

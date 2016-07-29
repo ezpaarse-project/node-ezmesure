@@ -13,6 +13,9 @@ config = JSON.parse(fs.readFileSync(configFile));
 exports.config = config;
 
 exports.authentication = function(token) {
+  if (!token) { 
+    throw new Error('Token is mandatory, check your config');
+  }
   options.headers = {'Authorization': `Bearer ${token}`};
   options.strictSSL = false;
 };

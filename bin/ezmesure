@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 'use strict';
-/*eslint no-console: 0, no-sync: 0 */
+/*eslint no-console: 0 */
 /**
  * Command used to enrich csv source with meta info from a doi identifi
  *

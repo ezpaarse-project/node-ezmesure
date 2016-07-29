@@ -3,6 +3,9 @@
   "version": "0.0.1",
   "description": "a wrapper around ezmesure API",
   "main": "index.js",
+  "bin": {
+    "ezmesure": "bin/ezmesure"
+  },
   "scripts": {
     "test": "mocha test"
   },

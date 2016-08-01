@@ -17,7 +17,7 @@ echo '{
 }' > .ezmesurerc
 ```
 This is needed to tell the module where is the ezMESURE URL API and the token for authentication.
-In this example, the token match the 'some-secret' token wich comes with the basic installation of ezmesure
+In this example, the token match the 'some-secret' token which comes with the basic installation of ezmesure
 
 ## Usage
 

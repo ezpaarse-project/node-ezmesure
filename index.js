@@ -3,13 +3,24 @@
 const request = require('request');
 const fs = require('fs');
 const path    = require('path');
-const configFile = path.join(__dirname, '/.ezmesurerc');
+const configFile = '.ezmesurerc';
 let options = {};
 let config = {};
 
 // load local configuration
-fs.accessSync(configFile);
-config = JSON.parse(fs.readFileSync(configFile));
+
+let configRaw;
+try {
+  configRaw = fs.readFileSync(configFile);
+} catch (e) {
+  if (e.code === 'ENOENT') {
+    console.warn('Configuration file .ezmesurerc not found');
+  }
+  throw e;
+}
+
+config = JSON.parse(configRaw);
+
 exports.config = config;
 exports.options = options;
 

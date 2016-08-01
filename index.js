@@ -2,7 +2,6 @@
 
 const request = require('request');
 const fs = require('fs');
-const path    = require('path');
 const configFile = '.ezmesurerc';
 let options = {};
 let config = {};
@@ -14,7 +13,7 @@ try {
   configRaw = fs.readFileSync(configFile);
 } catch (e) {
   if (e.code === 'ENOENT') {
-    console.warn('Configuration file .ezmesurerc not found');
+    throw new Error('Configuration file .ezmesurerc not found');
   }
   throw e;
 }
@@ -25,7 +24,7 @@ exports.config = config;
 exports.options = options;
 
 exports.authentication = function(token) {
-  if (!token) { 
+  if (!token) {
     throw new Error('Token is mandatory, check your config');
   }
   options.headers = {'Authorization': `Bearer ${token}`};

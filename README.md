@@ -44,6 +44,14 @@ ezmesure --help
 Send commands to ezMESURE
   Usage: bin/ezmesure <indexList|indexInsert|indexDelete|indexBulk> [<args>]
 
+Commandes:
+  indexList    Get the list of ezMESURE indexes
+  indexInsert  --index <index> --file <ezPAARSEfile.csv> insert data from
+               ezPAARSEfile.csv into index
+  indexDelete  --index <index> delete the index
+  indexBulk    --transactionsFile <transactionFile.json> process transactions
+               from transactionFile.json to ezMESURE
+
 Options:
   --url, -u               ezMESURE URL API, like
                           https://ezmesure-preprod.couperin.org
@@ -53,17 +61,26 @@ Options:
   --transactionsFile, -t  a JSON file containing transactions to send to
                           ezMESURE
 
+for more information, see https://github.com/Inist-CNRS/node-ezmesure
+
 ```
 
 ## Documentation
 
 ### Methods
 
-####  ezmesure.indexList(params, callback) 
+####  ezmesure.indexList(params: Object, callback: Function) : Object
+Take a params object and return an object containing the numbers of elements from each indexes 
+ex : { 'univ-fcomte': 35133, 'univ-test2': 31923, 'univ-test3': 15 }
 
-####  ezmesure.indexInsert(params, callback) 
+####  ezmesure.indexInsert(params: Object, callback: Function) : Object
+Take a params object, params object must have index and ezpaarseFile properties. Return an object with a read property (elements read)
+ex : { read: 31923 }
 
-####  ezmesure.indexDelete(params, callback) 
+####  ezmesure.indexDelete(params: Object, callback: Function) : Object
+Take a params object and return an object containing status of the action, params object must have index property. Return an object.
+ex : { acknowledged: true }
+
 
 
 

@@ -7,9 +7,13 @@
  */
 const fs = require('fs');
 const ezmesure = require('../index.js');
-const yargs   = require('yargs')
+let yargs = require('yargs')
   .usage('Send commands to ezMESURE' +
     '\n  Usage: $0 <indexList|indexInsert|indexDelete|indexBulk> [<args>]')
+  .command('indexList', 'Get the list of ezMESURE indexes')
+  .command('indexInsert', '--index <index> --file <ezPAARSEfile.csv> insert data from ezPAARSEfile.csv into index')
+  .command('indexDelete', '--index <index> delete the index')
+  .command('indexBulk', '--transactionsFile <transactionFile.json> process transactions from transactionFile.json to ezMESURE')
   .alias('url', 'u')
   .describe('url', 'ezMESURE URL API, like https://ezmesure-preprod.couperin.org')
   .alias('token', 't')
@@ -19,9 +23,11 @@ const yargs   = require('yargs')
   .alias('ezpaarseFile', 'f')
   .describe('ezpaarseFile', 'a csv file to insert. Have to be an ezPAARSE output.')
   .alias('transactionsFile', 't')
-  .describe('transactionsFile', 'a JSON file containing transactions to send to ezMESURE');
-let argv = yargs.argv;
+  .describe('transactionsFile', 'a JSON file containing transactions to send to ezMESURE')
+  .epilog('for more information, see https://github.com/Inist-CNRS/node-ezmesure')
+  ;
 
+let argv = yargs.argv;
 
 // show usage if --help option is used
 if (argv.help || argv.h) {

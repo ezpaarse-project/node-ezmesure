@@ -64,6 +64,19 @@ Options:
 for more information, see https://github.com/Inist-CNRS/node-ezmesure
 
 ```
+### Create your transactions file for indexBulk command
+
+You can use a transactions file for bulk insertions. The transactions file is a JSON file which contains an array of transactions. A transaction is an object containing at least a command property and the properties values needed by the command. You can see [a sample](https://raw.githubusercontent.com/Inist-CNRS/node-ezmesure/master/test/test-transactions.json) on gitHub.
+```
+cat test-transaction.json
+[
+  {"command": "indexList"},
+  {"command": "indexInsert", "index": "univ-test", "ezpaarseFile": "test/test-sample.csv"},
+  {"command": "indexList"},
+  {"command": "indexDelete", "index": "univ-test"},
+  {"command": "indexList"}
+]
+```
 
 ## Documentation
 

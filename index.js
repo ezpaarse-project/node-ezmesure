@@ -2,11 +2,15 @@
 
 const request = require('request');
 const fs = require('fs');
-const configFile = '.ezmesurerc';
+let configFile = '.ezmesurerc';
 let options = {};
 let config = {};
 
 // load local configuration
+
+if (process.env.EZMESURE_PATH) {
+  configFile = `${process.env.EZMESURE_PATH}/.ezmesurerc`;
+}
 
 let configRaw;
 try {

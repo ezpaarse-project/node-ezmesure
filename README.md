@@ -1,6 +1,6 @@
 # node-ezmesure
 
-A wrapper around ezmesure API
+A NodeJS wrapper around ezmesure API
 
 The [ezMESURE api](https://github.com/Inist-CNRS/node-ezmesure.git) is used.
 

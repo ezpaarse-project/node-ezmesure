@@ -5,8 +5,9 @@
  * Command used to enrich csv source with meta info from a doi identifi
  *
  */
-const fs = require('fs');
-const ezmesure = require('../index.js');
+const fs        = require('fs');
+const path      = require('path');
+const ezmesure  = require('../index.js');
 let yargs = require('yargs')
   .usage('Send commands to ezMESURE' +
     '\n  Usage: $0 <indexList|indexInsert|indexDelete|indexBulk> [<args>]')
@@ -69,6 +70,7 @@ action(reports);
 
 function action(callback) {
   let transaction = transactions.shift();
+  let params = {};
 
   if (!transaction) return callback();
   nbtr++;
@@ -106,6 +108,9 @@ function action(callback) {
     if ( !transaction.index) {
       console.error('indexInsert needs index parameter');
       process.exit(1);
+    }
+    if (path.extname(transaction.ezpaarseFile) === '.gz') {
+      ezmesure.options.headers['content-encoding'] = "application/gzip";
     }
 
     ezmesure.indexInsert({baseUrl: baseUrl, index: transaction.index, file: transaction.ezpaarseFile}, (err, list) => {

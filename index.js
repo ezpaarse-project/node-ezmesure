@@ -51,7 +51,7 @@ exports.getEzMesureIndex = function (list) {
 function query(params, callback) {
 
   request(options, (err, res, body) => {
-    // console.log(body);
+    //console.log(body);
     if (err) { return callback(err); }
     if (res.statusCode !== 200) {
       const rc = new Error('Invalid status return code');
@@ -80,7 +80,7 @@ function queryinsert(params, callback) {
 
   fs.createReadStream(params.file)
     .pipe(request(options, (err, res, body) => {
-      // console.log(body);
+      //console.log(body);
       if (err) { return callback(err); }
       if (res.statusCode !== 200) {
         const rc = new Error('Invalid status return code');

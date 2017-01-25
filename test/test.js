@@ -5,6 +5,7 @@ const path    = require('path');
 const expect  = require('chai').expect;
 const ezmesure = require('../index.js');
 const testFile = path.join(__dirname, '/test-sample.csv');
+const testFileGZ = path.join(__dirname, '/test-sample-compressed.csv.gz');
 
 ezmesure.authentication(ezmesure.config.token);
 
@@ -25,12 +26,23 @@ describe('ezMESURE', () => {
       if (err && err.statusCode === 401) {
         throw new Error('Check your token');
       }
-      expect(rep).not.to.be.an('error');
-      expect(rep).to.have.property('read', 5);
+      expect(err).not.to.be.an('error');
+      expect(rep).to.have.property('inserted', 5);
       done();
     });
   });
-  it('should correctly delete index univ-test (@03)', done => {
+  it('should correctly create index univ-test from gz file(@03)', done => {
+    ezmesure.options.headers['content-encoding'] = "application/gzip";
+    ezmesure.indexInsert({baseUrl: ezmesure.config.baseUrl, index: 'univ-test', file: testFileGZ}, (err, rep) => {
+      if (err && err.statusCode === 401) {
+        throw new Error('Check your token');
+      }
+      expect(err).not.to.be.an('error');
+      expect(rep).to.have.property('inserted', 5);
+      done();
+    });
+  });
+  it('should correctly delete index univ-test (@04)', done => {
     ezmesure.indexDelete({baseUrl: ezmesure.config.baseUrl, index: 'univ-test'}, (err, rep) => {
       if (err && err.statusCode === 401) {
         throw new Error('Check your token');

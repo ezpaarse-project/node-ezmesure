@@ -12,7 +12,7 @@ let yargs = require('yargs')
   .usage('Send commands to ezMESURE' +
     '\n  Usage: $0 <indexList|indexInsert|indexDelete|indexBulk> [<args>]')
   .command('indexList', 'Get the list of ezMESURE indexes')
-  .command('indexInsert', '--index <index> --file <ezPAARSEfile.csv> insert data from ezPAARSEfile.csv into index')
+  .command('indexInsert', '--index <index> --ezpaarseFile <ezPAARSEfile.csv> insert data from ezPAARSEfile.csv into index')
   .command('indexDelete', '--index <index> delete the index')
   .command('indexBulk', '--transactionsFile <transactionFile.json> process transactions from transactionFile.json to ezMESURE')
   .alias('url', 'u')

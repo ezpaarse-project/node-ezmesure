@@ -60,7 +60,7 @@ exports.indices.list = function (options, callback) {
 
 exports.indices.delete = function (indice, options) {
   return promisedQuery('DELETE', `${services.logs}/${indice}`, options).then(res => {
-    if (res && res.acknowledged) { return res; }
+    if (res && res.hasOwnProperty('acknowledged')) { return res; }
 
     return Promise.reject(new Error('Invalid response'));
   });

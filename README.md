@@ -11,7 +11,7 @@ npm install -g ezmesure
 
 ## Usage
 
-### Module usage
+### Module
 
 ```shell
 const ezmesure = require('ezmesure');
@@ -23,8 +23,8 @@ ezmesure.indices.list().then(indiceList => {
 });
 ```
 
-### Command line usage
-To use ezmesure on the command line:
+### Command line
+The module provides an `ezmesure` command. Use `--help` to get mor details about the way it works:
 ```shell
 ezmesure --help
 ```

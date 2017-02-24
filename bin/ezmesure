@@ -29,8 +29,8 @@ co(function* () {
       boolean: true,
       global: true
     })
-    .example('$0 indices list')
-    .example('$0 indices delete univ-nancy')
+    .example('ezmesure indices list')
+    .example('ezmesure indices delete univ-nancy')
     .demandCommand(1)
     .help()
     .argv;

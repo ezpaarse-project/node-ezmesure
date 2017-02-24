@@ -7,7 +7,8 @@
     "ezmesure": "bin/ezmesure"
   },
   "scripts": {
-    "test": "mocha test"
+    "test": "mocha test",
+    "lint": "eslint bin/ bin/ezmesure test/"
   },
   "repository": {
     "type": "git",
@@ -25,10 +26,14 @@
   },
   "homepage": "https://github.com/Inist-CNRS/node-ezmesure#readme",
   "dependencies": {
-    "chai": "^3.5.0",
-    "mocha": "^2.5.3",
+    "co": "^4.6.0",
+    "progress": "^1.1.8",
     "request": "^2.65.0",
     "yargs": "^4.8.1"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "eslint": "^3.16.1",
+    "mocha": "^2.5.3"
+  }
 }

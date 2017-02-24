@@ -1,152 +1,179 @@
 'use strict';
 
 const request = require('request');
-const fs = require('fs');
-let configFile = '.ezmesurerc';
-let options = {};
-let config = {};
+const fs      = require('fs');
+const path    = require('path');
+const co      = require('co');
 
-// load local configuration
-
-if (process.env.EZMESURE_PATH) {
-  configFile = `${process.env.EZMESURE_PATH}/.ezmesurerc`;
-}
-
-let configRaw;
-try {
-  configRaw = fs.readFileSync(configFile);
-} catch (e) {
-  if (e.code === 'ENOENT') {
-    throw new Error('Configuration file .ezmesurerc not found');
-  }
-  throw e;
-}
-
-config = JSON.parse(configRaw);
-
-exports.config = config;
-exports.options = options;
-
-exports.authentication = function(token) {
-  if (!token) {
-    throw new Error('Token is mandatory, check your config');
-  }
-  options.headers = {'Authorization': `Bearer ${token}`};
-  options.strictSSL = false;
+const services = {
+  logs: '/logs'
 };
 
-exports.isEzmesureIndex = function (element) {
-  return !element.startsWith('.');
+const defaults = {
+  baseUrl: 'https://ezmesure.couperin.org/api'
 };
 
-exports.getEzMesureIndex = function (list) {
-  let ezMesureIndexList = Object.keys(list.indices).filter(this.isEzmesureIndex).sort();
-  let ezMesureIndex = {};
-  ezMesureIndexList.forEach((index) => {
-    ezMesureIndex[index] = list.indices[index].total.docs.count;
+exports.config = {};
+
+exports.config.load = function (config) {
+  return new Promise((resolve, reject) => {
+    if (typeof config === 'object') {
+      Object.assign(defaults, config);
+      return resolve();
+    }
+
+    if (typeof config !== 'string') {
+      return reject(new Error('config should be either an object or a string'));
+    }
+
+    fs.readFile(path.resolve(config), 'utf-8', (err, content) => {
+      if (err) { return reject(err); }
+
+      try {
+        Object.assign(defaults, JSON.parse(content));
+      } catch (e) {
+        return reject(e);
+      }
+
+      resolve();
+    });
   });
-  return ezMesureIndex;
 };
 
-function query(params, callback) {
+exports.indices = {};
 
-  request(options, (err, res, body) => {
-    //console.log(body);
+exports.indices.list = function (options, callback) {
+  return promisedQuery('GET', services.logs, options).then(res => {
+    if (!res || !res.indices) { return Promise.reject(new Error('Invalid response')); }
+
+    return Object.keys(res.indices)
+      .filter(name => !name.startsWith('.'))
+      .sort()
+      .map(name => {
+        return {
+          name,
+          docs: res.indices[name].total.docs.count
+        };
+      });
+  });
+};
+
+exports.indices.delete = function (indice, options) {
+  return promisedQuery('DELETE', `${services.logs}/${indice}`, options).then(res => {
+    if (res && res.acknowledged) { return res; }
+
+    return Promise.reject(new Error('Invalid response'));
+  });
+};
+
+exports.indices.insert = co.wrap(function* (file, indice, options) {
+  options = options || {};
+  options.headers = options.headers || {};
+
+  let stream = file;
+
+  if (typeof file === 'string') {
+    const stats = yield getStats(file);
+
+    options.headers['content-length'] = stats.size;
+
+    if (path.extname(file).toLowerCase() === '.gz') {
+      options.headers['content-encoding'] = 'application/gzip';
+    }
+
+    stream = fs.createReadStream(file);
+
+  } else if (typeof file !== 'object' || typeof file.pipe !== 'function') {
+    return new Error('Unsupported file type, use either path or stream');
+  }
+
+  return new Promise((resolve, reject) => {
+    stream.pipe(query('POST', `${services.logs}/${indice}`, options, (err, res) => {
+      if (err) { reject(err); }
+      resolve(res);
+    }));
+  });
+});
+
+exports.indexList   = exports.indices.list;
+exports.indexInsert = exports.indices.insert;
+exports.indexDelete = exports.indices.delete;
+
+/**
+ * Wrapper that just promisify the query function
+ */
+function promisedQuery(method, pathName, options) {
+  return new Promise((resolve, reject) => {
+    query(method, pathName, options, (err, res) => {
+      if (err) { return reject(err); }
+      resolve(res);
+    });
+  });
+}
+
+/**
+ * Perform a query to ezMESURE
+ * @param <String> method    GET, POST, PUT...
+ * @param <String> pathName  url PATH
+ * @param <Object> options
+ *                 <String>  baseUrl   full URL of the API
+ *                 <Object>  headers   headers to send
+ *                 <String>  token     JWT auth token
+ *                 <Boolean> scritSSL  enable/disable SSL cert verification
+ * @returns <Object> request stream
+ */
+function query(method, pathName, options, callback) {
+
+  options = Object.assign({}, defaults, options);
+
+  const reqOptions = {
+    method,
+    baseUrl: options.baseUrl,
+    uri: encodeURI(pathName),
+    headers: options.headers || {}
+  };
+
+  if (options.token) {
+    reqOptions.headers['Authorization'] = `Bearer ${options.token}`;
+  }
+  if (options.hasOwnProperty('strictSSL')) {
+    reqOptions.strictSSL = options.strictSSL;
+  }
+
+  return request(reqOptions, (err, res, body) => {
     if (err) { return callback(err); }
-    if (res.statusCode !== 200) {
-      const rc = new Error('Invalid status return code');
+
+    if (res.statusCode >= 300) {
+      const rc = new Error(`Invalid status code: ${res.statusCode} ${res.statusMessage}`);
       rc.statusCode = res.statusCode;
       rc.statusMessage = res.statusMessage;
       return callback(rc);
     }
 
-    let ezmesure;
+    let result;
 
     try {
-      ezmesure = JSON.parse(body);
+      result = JSON.parse(body);
     } catch (e) {
       return callback(e);
     }
 
-    if (ezmesure.error) {
-      return callback(null, null);
+    if (result.error) {
+      return callback(new Error('ezMESURE returned with an error'), result);
     }
 
-    callback(null, ezmesure);
+    callback(null, result);
   });
 }
 
-function queryinsert(params, callback) {
-
-  fs.createReadStream(params.file)
-    .pipe(request(options, (err, res, body) => {
-      //console.log(body);
-      if (err) { return callback(err); }
-      if (res.statusCode !== 200) {
-        const rc = new Error('Invalid status return code');
-        rc.statusCode = res.statusCode;
-        rc.statusMessage = res.statusMessage;
-        return callback(rc);
-      }
-
-      let ezmesure;
-
-      try {
-        ezmesure = JSON.parse(body);
-      } catch (e) {
-        return callback(e);
-      }
-
-      if (ezmesure.error) {
-        return callback(null, null);
-      }
-
-      callback(null, ezmesure);
-    })
-  );
+/**
+ * Promisified fs.stat
+ */
+function getStats(file) {
+  return new Promise((resolve, reject) => {
+    fs.stat(file, (err, stats) => {
+      if (err) { return reject(err); }
+      resolve(stats);
+    });
+  });
 }
-
-exports.indexList = function (params, callback) {
-  const service = 'api/logs';
-  options.uri = encodeURI(`${params.baseUrl}/${service}`);
-  options.method = 'GET';
-
-  if (typeof callback === 'function') { return query(params, callback); }
-
-  return new Promise((resolve, reject) => {
-    query(params, (err, ezmesure) => {
-      if (err) { return reject(err); }
-      resolve(ezmesure);
-    });
-  });
-};
-
-exports.indexInsert = function (params, callback) {
-  const service = 'api/logs';
-  options.uri = encodeURI(`${params.baseUrl}/${service}/${params.index}`);
-  options.method = 'POST';
-
-  if (typeof callback === 'function') { return queryinsert(params, callback); }
-
-  return new Promise((resolve, reject) => {
-    queryinsert(params, (err, ezmesure) => {
-      if (err) { return reject(err); }
-      resolve(ezmesure);
-    });
-  });
-};
-
-exports.indexDelete = function (params, callback) {
-  const service = 'api/logs';
-  options.uri = encodeURI(`${params.baseUrl}/${service}/${params.index}`);
-  options.method = 'DELETE';
-
-  if (typeof callback === 'function') { return query(params, callback); }
-
-  return new Promise((resolve, reject) => {
-    query(params, (err, ezmesure) => {
-      if (err) { return reject(err); }
-      resolve(ezmesure);
-    });
-  });
-};

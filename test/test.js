@@ -1,55 +1,39 @@
-/*global describe, it*/
+/*global describe, it, before*/
 'use strict';
 
-const path    = require('path');
-const expect  = require('chai').expect;
-const ezmesure = require('../index.js');
-const testFile = path.join(__dirname, '/test-sample.csv');
+const path       = require('path');
+const expect     = require('chai').expect;
+const ezmesure   = require('../index.js');
+
+const testFile   = path.join(__dirname, '/test-sample.csv');
 const testFileGZ = path.join(__dirname, '/test-sample-compressed.csv.gz');
 
-ezmesure.authentication(ezmesure.config.token);
-
 describe('ezMESURE', () => {
+  before(() => {
+    return ezmesure.config.load(path.resolve(__dirname, '../.ezmesurerc'));
+  });
 
-  it('should correctly show index list (@01)', done => {
-    ezmesure.indexList({baseUrl: ezmesure.config.baseUrl}, (err, list) => {
-      if (err && err.statusCode === 401) {
-        throw new Error('Check your token');
-      }
-      expect(err).not.to.be.an('error');
-      expect(list).to.have.property('indices');
-      done();
+  it('should correctly get index list (@01)', () => {
+    return ezmesure.indices.list().then(list => {
+      expect(list).to.be.an('array');
     });
   });
-  it('should correctly create index univ-test (@02)', done => {
-    ezmesure.indexInsert({baseUrl: ezmesure.config.baseUrl, index: 'univ-test', file: testFile}, (err, rep) => {
-      if (err && err.statusCode === 401) {
-        throw new Error('Check your token');
-      }
-      expect(err).not.to.be.an('error');
+
+  it('should correctly create index univ-test (@02)', () => {
+    return ezmesure.indices.insert(testFile, 'univ-test').then(rep => {
       expect(rep).to.have.property('inserted', 5);
-      done();
     });
   });
-  it('should correctly create index univ-test from gz file(@03)', done => {
-    ezmesure.options.headers['content-encoding'] = "application/gzip";
-    ezmesure.indexInsert({baseUrl: ezmesure.config.baseUrl, index: 'univ-test', file: testFileGZ}, (err, rep) => {
-      if (err && err.statusCode === 401) {
-        throw new Error('Check your token');
-      }
-      expect(err).not.to.be.an('error');
+
+  it('should correctly create index univ-test from gz file(@03)', () => {
+    return ezmesure.indices.insert(testFileGZ, 'univ-test').then(rep => {
       expect(rep).to.have.property('inserted', 5);
-      done();
     });
   });
-  it('should correctly delete index univ-test (@04)', done => {
-    ezmesure.indexDelete({baseUrl: ezmesure.config.baseUrl, index: 'univ-test'}, (err, rep) => {
-      if (err && err.statusCode === 401) {
-        throw new Error('Check your token');
-      }
-      expect(err).not.to.be.an('error');
+
+  it('should correctly delete index univ-test (@04)', () => {
+    return ezmesure.indices.delete('univ-test', rep => {
       expect(rep).to.have.property('acknowledged', true);
-      done();
     });
   });
 });

@@ -9,97 +9,56 @@ The [ezMESURE api](https://github.com/Inist-CNRS/node-ezmesure.git) is used.
 npm install -g ezmesure
 ```
 
-## Create your .ezmesurerc file
-```shell
-echo '{
-  "baseUrl": "https://localhost",
-  "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE0NjY1MTEwMDN9.DGDp0pb1DlydJDubf4HCbYzntFsl-zOeXdTD3mlhPzM"
-}' > .ezmesurerc
-```
-This is needed to tell the module where is the ezMESURE URL API and the token for authentication.
-In this example, the token match the 'some-secret' token which comes with the basic installation of ezmesure
-
 ## Usage
 
 ### Module usage
 
 ```shell
-var ezmesure = require('ezmesure');
+const ezmesure = require('ezmesure');
 
-ezmesure.indexList({baseUrl: 'http://ezmesure-preprod.couperin.org'}, (err, list) => {
-  if (err && err.statusCode === 401) {
-    console.error('Check your token');
-    process.exit(1);
-  }
-  console.log(ezmesure.getEzMesureIndex(list));
+ezmesure.indices.list().then(indiceList => {
+  console.log(indiceList);
+}).catch(err => {
+  console.error(err);
 });
-
-
 ```
 
 ### Command line usage
-Getting help
+To use ezmesure on the command line:
 ```shell
 ezmesure --help
-Send commands to ezMESURE
-  Usage: bin/ezmesure <indexList|indexInsert|indexDelete|indexBulk> [<args>]
-
-Commandes:
-  indexList    Get the list of ezMESURE indexes
-  indexInsert  --index <index> --file <ezPAARSEfile.csv> insert data from
-               ezPAARSEfile.csv into index
-  indexDelete  --index <index> delete the index
-  indexBulk    --transactionsFile <transactionFile.json> process transactions
-               from transactionFile.json to ezMESURE
-
-Options:
-  --url, -u               ezMESURE URL API, like
-                          https://ezmesure-preprod.couperin.org
-  --token, -t             JWT token needed for authentication
-  --index, -i             index concerned by the command, like univ-test
-  --ezpaarseFile, -f      a csv file to insert. Have to be an ezPAARSE output.
-  --transactionsFile, -t  a JSON file containing transactions to send to
-                          ezMESURE
-
-for more information, see https://github.com/Inist-CNRS/node-ezmesure
-
-```
-### Create your transactions file for indexBulk command
-
-You can use a transactions file for bulk insertions. The transactions file is a JSON file which contains an array of transactions. A transaction is an object containing at least a command property and the properties values needed by the command. You can see [a sample](https://raw.githubusercontent.com/Inist-CNRS/node-ezmesure/master/test/test-transactions.json) on gitHub.
-```
-cat test-transaction.json
-[
-  {"command": "indexList"},
-  {"command": "indexInsert", "index": "univ-test", "ezpaarseFile": "test/test-sample.csv"},
-  {"command": "indexList"},
-  {"command": "indexDelete", "index": "univ-test"},
-  {"command": "indexList"}
-]
 ```
 
-## Documentation
+## API
 
 ### Methods
 
-####  ezmesure.indexList(params: Object, callback: Function) : Object
-Take a params object and return an object containing the numbers of elements from each indexes 
-ex : { 'univ-fcomte': 35133, 'univ-test2': 31923, 'univ-test3': 15 }
+####  indices.list([{Object} options]) : Promise
+Returns an array of all indices with their name and the number of documents.
 
-####  ezmesure.indexInsert(params: Object, callback: Function) : Object
-Take a params object, params object must have index and ezpaarseFile properties. Return an object with a read property (elements read)
-ex : { read: 31923 }
+Example of result:
+```js
+[
+  { name: 'univ-fcomte', docs: 35133 },
+  { name: 'univ-test2', docs: 31923 },
+  { name: 'univ-test3', docs: 15 }
+]
+```
 
-####  ezmesure.indexDelete(params: Object, callback: Function) : Object
-Take a params object and return an object containing status of the action, params object must have index property. Return an object.
-ex : { acknowledged: true }
+####  indices.insert({String|Stream} file, {String} indice[, {Object} options]) : Promise
+Insert a file (given either a path or a readable stream) into an indice.
+Returns an object with the following properties:
+  - `inserted`: number of documents successfuly inserted.
+  - `failed`: number of documents that failed to be inserted.
+  - `errors`: an array containing the 10 first errors generated during the insertion.
 
+####  indices.delete({String} indice[, {Object} options]) : Promise
+Delete an indice.
+Returns an object with the following property:
+  - `acknowledged`: boolean, will be `true` in case of success, `false` otherwise.
 
-
-
-
-
-
-
-
-
+## Options
+  - {String} `baseurl`: URL to the API endpoint (ex: https://ezmesure.couperin.org/api)
+  - {String} `token`: JWT auth token
+  - {Boolean} `strictSSL`: enable or disable SSL cert verification
+  - {Object} `headers`: custom headers to send along with the request

@@ -1,6 +1,6 @@
 'use strict';
 
-const ezmesure    = require('../../../index.js');
+const ezmesure    = require('../../..');
 const ProgressBar = require('progress');
 const fs          = require('fs');
 const co          = require('co');

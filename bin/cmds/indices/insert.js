@@ -36,7 +36,10 @@ function insertFile(file, indice, globalOptions) {
   return co(function* () {
     const stats     = yield getStats(file);
     const options   = Object.assign({}, globalOptions);
-    const barTokens = { indice, file };
+    const barTokens = {
+      indice,
+      file: path.basename(file)
+    };
 
     options.headers['content-length'] = stats.size;
 

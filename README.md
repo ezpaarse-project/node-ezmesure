@@ -28,6 +28,7 @@ The module provides an `ezmesure` command. Use `--help` to get mor details about
 ```shell
 ezmesure --help
 ```
+When using node-ezmesure on the command line, any `.ezmesurerc` file located in the current directory or any of its parents will be used as default
 
 ## API
 
@@ -46,16 +47,24 @@ Example of result:
 ```
 
 ####  indices.insert({String|Stream} file, {String} indice[, {Object} options]) : Promise
-Insert a file (given either a path or a readable stream) into an indice.
+Inserts a file (given either a path or a readable stream) into an indice.
 Returns an object with the following properties:
   - `inserted`: number of documents successfuly inserted.
   - `failed`: number of documents that failed to be inserted.
   - `errors`: an array containing the 10 first errors generated during the insertion.
 
 ####  indices.delete({String} indice[, {Object} options]) : Promise
-Delete an indice.
+Deletes an indice.
 Returns an object with the following property:
   - `acknowledged`: boolean, will be `true` in case of success, `false` otherwise.
+
+#### config.find([{String} startPath]) : Promise
+Looks for a `.ezmesurerc` file in the given directory (defaulting to the working directory) and all its parents.
+Returns the path of the config file, or `null` if not found.
+
+#### config.load({String|Object} config) : Promise
+Loads a default config, using either an object or a path to a config file.
+
 
 ## Options
   - {String} `baseurl`: URL to the API endpoint (ex: https://ezmesure.couperin.org/api)

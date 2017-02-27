@@ -3,11 +3,15 @@
 
 const co       = require('co');
 const yargs    = require('yargs');
-const ezmesure = require('../index.js');
+const ezmesure = require('..');
 
 co(function* () {
   try {
-    yield ezmesure.config.load('.ezmesurerc');
+    const configFile = yield ezmesure.config.find();
+
+    if (configFile) {
+      yield ezmesure.config.load(configFile);
+    }
   } catch (err) {
     if (err.code !== 'ENOENT') { throw err; }
   }

@@ -1,6 +1,6 @@
 'use strict';
 
-const ezmesure = require('../../../index.js');
+const ezmesure = require('../../..');
 const co = require('co');
 
 exports.command = 'list';

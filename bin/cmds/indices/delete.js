@@ -1,6 +1,6 @@
 'use strict';
 
-const ezmesure = require('../../../index.js');
+const ezmesure = require('../../..');
 
 exports.command = 'delete <indice>';
 exports.desc    = 'Delete <indice>';

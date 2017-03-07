@@ -68,7 +68,8 @@ function insertFile(file, indice, globalOptions) {
       }
 
       console.log('  [%s] Inserted', res.inserted);
-      console.log('  [%s] Not inserted', res.failed);
+      console.log('  [%s] Updated', res.updated);
+      console.log('  [%s] Failed', res.failed);
 
       if (res.errors && res.errors.length) {
         console.log('  Errors:');

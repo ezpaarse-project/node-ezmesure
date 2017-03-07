@@ -12,7 +12,7 @@ exports.handler = function (argv) {
   if (argv.token) { options.token = argv.token; }
   if (argv.insecure) { options.strictSSL = false; }
 
-  ezmesure.indexDelete(argv.indice, options).then(res => {
+  ezmesure.indices.delete(argv.indice, options).then(res => {
     console.log('%s deleted', argv.indice);
   }).catch(err => {
     console.error(err.statusCode === 401 ? 'Invalid token' : err.message);

@@ -27,6 +27,19 @@ ezmesure.indices.list().then(indiceList => {
 The module provides an `ezmesure` command. Use `--help` to get mor details about the way it works:
 ```shell
 ezmesure --help
+Commands:
+  indices <command>  Manage indices
+
+Options:
+  -u, --base-url  API URL (ex: https://ezmesure-preprod.couperin.org/api)
+  -t, --token     Auth token
+  -k, --insecure  Allow connections to SSL without certs               [boolean]
+  --help          Show help                                            [boolean]
+
+Examples:
+  ezmesure indices list
+  ezmesure indices delete univ-nancy
+
 ```
 When using node-ezmesure on the command line, any `.ezmesurerc` file located in the current directory or any of its parents will be used as default
 

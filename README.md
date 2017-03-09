@@ -63,6 +63,7 @@ Example of result:
 Inserts a file (given either a path or a readable stream) into an indice.
 Returns an object with the following properties:
   - `inserted`: number of documents successfuly inserted.
+  - `updated`: number of documents successfuly updated.
   - `failed`: number of documents that failed to be inserted.
   - `errors`: an array containing the 10 first errors generated during the insertion.
 

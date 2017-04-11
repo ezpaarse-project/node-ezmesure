@@ -6,6 +6,9 @@
   "bin": {
     "ezmesure": "bin/ezmesure"
   },
+  "engines": {
+    "node" : ">=6.0.0"
+  },
   "scripts": {
     "test": "mocha test",
     "lint": "eslint bin/ bin/ezmesure test/"

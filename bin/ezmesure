@@ -33,6 +33,12 @@ co(function* () {
       boolean: true,
       global: true
     })
+    .option('m', {
+      alias: 'timeout',
+      describe: 'Request timeout in milliseconds',
+      number: true,
+      global: true
+    })
     .example('ezmesure indices list')
     .example('ezmesure indices delete univ-nancy')
     .demandCommand(1)

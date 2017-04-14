@@ -16,6 +16,7 @@ exports.handler = function (argv) {
 
   if (argv.u) { globalOptions.baseUrl = argv.u; }
   if (argv.token) { globalOptions.token = argv.token; }
+  if (argv.timeout) { globalOptions.timeout = argv.timeout; }
   if (argv.insecure) { globalOptions.strictSSL = false; }
 
   const aggs = {

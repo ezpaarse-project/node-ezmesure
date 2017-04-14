@@ -10,6 +10,7 @@ exports.handler = function (argv) {
 
   if (argv.u) { options.baseUrl = argv.u; }
   if (argv.token) { options.token = argv.token; }
+  if (argv.timeout) { options.timeout = argv.timeout; }
   if (argv.insecure) { options.strictSSL = false; }
 
   ezmesure.indices.delete(argv.indice, options).then(res => {

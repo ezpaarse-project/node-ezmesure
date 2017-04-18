@@ -127,11 +127,9 @@ function insertFile(file, indice, globalOptions) {
 
     if (path.extname(file).toLowerCase() === '.gz') {
       if (globalOptions.gunzip) {
-        console.log('LOCAL')
         stream = zlib.createGunzip();
         fileReader.pipe(stream);
       } else {
-        console.log('NOT LOCAL')
         options.headers['content-encoding'] = 'application/gzip';
         options.headers['content-length'] = stats.size;
       }

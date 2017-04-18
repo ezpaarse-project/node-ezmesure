@@ -3,16 +3,25 @@
 const ezmesure    = require('../../..');
 const ProgressBar = require('progress');
 const fs          = require('fs');
+const zlib        = require('zlib');
 const co          = require('co');
 const path        = require('path');
 
 exports.command = 'insert <indice> <files..>';
-exports.desc    = 'Insert <file> into an <indice>';
-exports.builder = {};
+exports.desc    = 'Insert <files> into an <indice>';
+exports.builder = function (yargs) {
+  return yargs.option('z', {
+    alias: 'gunzip',
+    describe: 'Uncompress Gzip files locally'
+  });
+};
 exports.handler = function (argv) {
   const { files, indice } = argv;
 
-  const globalOptions = { headers: {} };
+  const globalOptions = {
+    gunzip: argv.gunzip,
+    headers: {}
+  };
 
   if (argv.u) { globalOptions.baseUrl = argv.u; }
   if (argv.token) { globalOptions.token = argv.token; }
@@ -99,12 +108,6 @@ function insertFile(file, indice, globalOptions) {
       file: path.basename(file)
     };
 
-    options.headers['content-length'] = stats.size;
-
-    if (path.extname(file).toLowerCase() === '.gz') {
-      options.headers['content-encoding'] = 'application/gzip';
-    }
-
     console.log();
 
     let bar = new ProgressBar('  :file => :indice [:bar] :percent :etas  ', {
@@ -120,7 +123,21 @@ function insertFile(file, indice, globalOptions) {
       bar.tick(chunk.length, barTokens);
     });
 
-    return ezmesure.indices.insert(fileReader, indice, options).then(res => {
+    let stream = fileReader;
+
+    if (path.extname(file).toLowerCase() === '.gz') {
+      if (globalOptions.gunzip) {
+        console.log('LOCAL')
+        stream = zlib.createGunzip();
+        fileReader.pipe(stream);
+      } else {
+        console.log('NOT LOCAL')
+        options.headers['content-encoding'] = 'application/gzip';
+        options.headers['content-length'] = stats.size;
+      }
+    }
+
+    return ezmesure.indices.insert(stream, indice, options).then(res => {
       return res || Promise.reject(new Error('No result'));
     });
   });

@@ -1,4 +1,4 @@
 {
-  "baseUrl": "https://localhost",
+  "baseUrl": "https://localhost/api",
   "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE0NjY1MTEwMDN9.DGDp0pb1DlydJDubf4HCbYzntFsl-zOeXdTD3mlhPzM"
 }

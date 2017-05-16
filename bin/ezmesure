@@ -40,7 +40,8 @@ co(function* () {
       global: true
     })
     .example('ezmesure indices list')
-    .example('ezmesure indices delete univ-nancy')
+    .example('ezmesure indices insert univ-example ezpaarse-results.csv')
+    .example('ezmesure indices delete univ-example')
     .demandCommand(1)
     .help()
     .argv;

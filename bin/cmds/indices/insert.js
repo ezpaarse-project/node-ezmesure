@@ -37,13 +37,7 @@ exports.handler = function (argv) {
 
   co(function* () {
     for (const file of files) {
-      let res;
-      try {
-        res = yield insertFile(file, indice, globalOptions);
-      } catch (e) {
-        console.error(e);
-        continue;
-      }
+      const res = yield insertFile(file, indice, globalOptions);
 
       ['total','inserted','updated','failed'].forEach(cat => {
         res[cat] = parseInt(res[cat]);

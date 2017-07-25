@@ -12,7 +12,8 @@ exports.desc    = 'Insert <files> into an <indice>';
 exports.builder = function (yargs) {
   return yargs.option('z', {
     alias: 'gunzip',
-    describe: 'Uncompress Gzip files locally'
+    describe: 'Uncompress Gzip files locally',
+    boolean: true
   });
 };
 exports.handler = function (argv) {

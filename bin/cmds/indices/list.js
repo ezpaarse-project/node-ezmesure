@@ -23,7 +23,7 @@ exports.handler = co.wrap(function* (argv) {
   }
 
   if (list.length === 0) {
-    return console.log('No indices');
+    return console.log('No index');
   }
 
   // Getting the size of the longest name for pretty indentation

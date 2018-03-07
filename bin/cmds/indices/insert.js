@@ -65,7 +65,7 @@ exports.handler = function (argv) {
     printMetric('  Failed', aggs.failed, aggs.total);
 
   }).catch(e => {
-    console.error(e);
+    console.error(`Error: ${e.message}`);
     process.exit(1);
   });
 

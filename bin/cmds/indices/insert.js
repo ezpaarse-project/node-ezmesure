@@ -14,6 +14,10 @@ exports.builder = function (yargs) {
     alias: 'gunzip',
     describe: 'Uncompress Gzip files locally',
     boolean: true
+  }).option('n', {
+    alias: 'no-store',
+    describe: 'Disable storing uploaded data in your online space',
+    boolean: true
   });
 };
 exports.handler = function (argv) {
@@ -21,13 +25,15 @@ exports.handler = function (argv) {
 
   const globalOptions = {
     gunzip: argv.gunzip,
-    headers: {}
+    headers: {},
+    qs: {}
   };
 
   if (argv.u) { globalOptions.baseUrl = argv.u; }
   if (argv.token) { globalOptions.token = argv.token; }
   if (argv.timeout) { globalOptions.timeout = argv.timeout; }
   if (argv.insecure) { globalOptions.strictSSL = false; }
+  if (argv.n) { globalOptions.qs.nostore = true; }
 
   const aggs = {
     total: 0,

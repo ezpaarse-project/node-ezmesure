@@ -25,15 +25,14 @@ exports.handler = function (argv) {
 
   const globalOptions = {
     gunzip: argv.gunzip,
-    headers: {},
-    qs: {}
+    headers: {}
   };
 
   if (argv.u) { globalOptions.baseUrl = argv.u; }
   if (argv.token) { globalOptions.token = argv.token; }
   if (argv.timeout) { globalOptions.timeout = argv.timeout; }
   if (argv.insecure) { globalOptions.strictSSL = false; }
-  if (argv.n) { globalOptions.qs.nostore = true; }
+  if (argv.n) { globalOptions.store = false; }
 
   const aggs = {
     total: 0,

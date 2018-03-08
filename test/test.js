@@ -21,13 +21,13 @@ describe('ezMESURE', () => {
   });
 
   it('should correctly create index univ-test (@02)', () => {
-    return ezmesure.indices.insert(testFile, 'univ-test').then(rep => {
+    return ezmesure.indices.insert(testFile, 'univ-test', { store: false }).then(rep => {
       expect(rep).to.have.property('inserted', 5);
     });
   });
 
   it('should fire an error if the input file is invalid (@03)', () => {
-    return ezmesure.indices.insert(invalidTestFile, 'univ-test').then(rep => {
+    return ezmesure.indices.insert(invalidTestFile, 'univ-test', { store: false }).then(rep => {
       return Promise.reject('the request should fail');
     }).catch(e => {
       expect(e).to.have.property('statusCode', 400);
@@ -35,7 +35,7 @@ describe('ezMESURE', () => {
   });
 
   it('should correctly create index univ-test from gz file(@04)', () => {
-    return ezmesure.indices.insert(testFileGZ, 'univ-test').then(rep => {
+    return ezmesure.indices.insert(testFileGZ, 'univ-test', { store: false }).then(rep => {
       expect(rep).to.have.property('inserted', 5);
     });
   });

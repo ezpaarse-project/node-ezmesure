@@ -1,6 +1,6 @@
 {
   "name": "ezmesure",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "description": "a wrapper around ezmesure API",
   "main": "index.js",
   "bin": {

@@ -15,19 +15,19 @@ describe('ezMESURE', () => {
   });
 
   it('should correctly get index list (@01)', () => {
-    return ezmesure.indices.list().then(list => {
+    return ezmesure.indices.list({ strictSSL: false }).then(list => {
       expect(list).to.be.an('array');
     });
   });
 
   it('should correctly create index univ-test (@02)', () => {
-    return ezmesure.indices.insert(testFile, 'univ-test', { store: false }).then(rep => {
+    return ezmesure.indices.insert(testFile, 'univ-test', { store: false, strictSSL: false }).then(rep => {
       expect(rep).to.have.property('inserted', 5);
     });
   });
 
   it('should fire an error if the input file is invalid (@03)', () => {
-    return ezmesure.indices.insert(invalidTestFile, 'univ-test', { store: false }).then(rep => {
+    return ezmesure.indices.insert(invalidTestFile, 'univ-test', { store: false, strictSSL: false }).then(rep => {
       return Promise.reject('the request should fail');
     }).catch(e => {
       expect(e).to.have.property('statusCode', 400);
@@ -35,13 +35,13 @@ describe('ezMESURE', () => {
   });
 
   it('should correctly create index univ-test from gz file(@04)', () => {
-    return ezmesure.indices.insert(testFileGZ, 'univ-test', { store: false }).then(rep => {
+    return ezmesure.indices.insert(testFileGZ, 'univ-test', { store: false, strictSSL: false }).then(rep => {
       expect(rep).to.have.property('inserted', 5);
     });
   });
 
   it('should correctly delete index univ-test (@05)', () => {
-    return ezmesure.indices.delete('univ-test', rep => {
+    return ezmesure.indices.delete('univ-test', { strictSSL: false }, rep => {
       expect(rep).to.have.property('acknowledged', true);
     });
   });

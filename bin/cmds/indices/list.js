@@ -29,10 +29,10 @@ exports.handler = co.wrap(function* (argv) {
   // Getting the size of the longest name for pretty indentation
   const maxChars = list.reduce((prev, cur) => Math.max(prev, cur.name.length), 6);
 
-  console.log(`Indice ${' '.repeat(maxChars - 5)} Documents`);
+  console.log(`Index ${' '.repeat(maxChars - 4)} Documents`);
 
-  list.forEach(indice => {
-    const spacing = '-'.repeat(maxChars - indice.name.length + 1);
-    console.log(`${indice.name} ${spacing} ${indice.docs}`);
+  list.forEach(index => {
+    const spacing = '-'.repeat(maxChars - index.name.length + 1);
+    console.log(`${index.name} ${spacing} ${index.docs}`);
   });
 });

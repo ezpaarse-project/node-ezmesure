@@ -7,8 +7,8 @@ const zlib        = require('zlib');
 const co          = require('co');
 const path        = require('path');
 
-exports.command = 'insert <indice> <files..>';
-exports.desc    = 'Insert <files> into an <indice>';
+exports.command = 'insert <index> <files..>';
+exports.desc    = 'Insert <files> into an <index>';
 exports.builder = function (yargs) {
   return yargs.option('z', {
     alias: 'gunzip',
@@ -21,7 +21,7 @@ exports.builder = function (yargs) {
   });
 };
 exports.handler = function (argv) {
-  const { files, indice } = argv;
+  const { files, index } = argv;
 
   const globalOptions = {
     gunzip: argv.gunzip,
@@ -43,7 +43,7 @@ exports.handler = function (argv) {
 
   co(function* () {
     for (const file of files) {
-      const res = yield insertFile(file, indice, globalOptions);
+      const res = yield insertFile(file, index, globalOptions);
 
       ['total','inserted','updated','failed'].forEach(cat => {
         res[cat] = parseInt(res[cat]);
@@ -99,18 +99,18 @@ function printErrors(errors) {
   });
 }
 
-function insertFile(file, indice, globalOptions) {
+function insertFile(file, index, globalOptions) {
   return co(function* () {
     const stats     = yield getStats(file);
     const options   = Object.assign({}, globalOptions);
     const barTokens = {
-      indice,
+      index,
       file: path.basename(file)
     };
 
     console.log();
 
-    let bar = new ProgressBar('  :file => :indice [:bar] :percent :etas  ', {
+    let bar = new ProgressBar('  :file => :index [:bar] :percent :etas  ', {
       complete: '=',
       incomplete: ' ',
       width: 50,
@@ -135,7 +135,7 @@ function insertFile(file, indice, globalOptions) {
       }
     }
 
-    return ezmesure.indices.insert(stream, indice, options).then(res => {
+    return ezmesure.indices.insert(stream, index, options).then(res => {
       return res || Promise.reject(new Error('No result'));
     });
   });

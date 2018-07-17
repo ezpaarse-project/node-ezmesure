@@ -18,6 +18,9 @@ exports.builder = function (yargs) {
     alias: 'no-store',
     describe: 'Disable storing uploaded data in your online space',
     boolean: true
+  }).option('s', {
+    alias: 'split',
+    describe: 'Split a multivalued field. Format: "fieldname(delimitor)"'
   });
 };
 exports.handler = function (argv) {
@@ -33,6 +36,7 @@ exports.handler = function (argv) {
   if (argv.timeout) { globalOptions.timeout = argv.timeout; }
   if (argv.insecure) { globalOptions.strictSSL = false; }
   if (argv.n) { globalOptions.store = false; }
+  if (argv.split) { globalOptions.split = argv.split; }
 
   const aggs = {
     total: 0,

@@ -4,7 +4,8 @@
   "description": "a wrapper around ezmesure API",
   "main": "index.js",
   "bin": {
-    "ezmesure": "bin/ezmesure"
+    "ezmesure": "bin/ezmesure",
+    "ezm": "bin/ezmesure"
   },
   "engines": {
     "node": ">=6.0.0"

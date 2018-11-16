@@ -77,8 +77,8 @@ Give top metrics for a given \<index\>
 
 | Name | Type | Description |
 | --- | --- | --- |
-| -s, --size | Number  | Size of the tops |
-| -p, --period   | String  | Period of the tops. Possible values: today, yesterday, current_week, last_week, current_month, last_month, current_year, last_year, all (default) |
+| -s, --size   | Number | Size of the tops |
+| -p, --period | String | Period of the tops. Possible values: today, yesterday, current_week, last_week, current_month, last_month, current_year, last_year, all (default) |
 
 #### Examples
 ```bash
@@ -105,6 +105,15 @@ ezmesure.indices.list().then(indiceList => {
   console.error(err);
 });
 ```
+
+### Global options
+
+| Name | Type | Description |
+| --- | --- | --- |
+| baseurl   | String  | URL to the API endpoint (ex: https://ezmesure.couperin.org/api) |
+| token     | String  | JWT auth token |
+| strictSSL | Boolean | enable or disable SSL cert verification |
+| headers   | Object  | custom headers to send along with the request |
 
 ### Methods
 
@@ -133,6 +142,69 @@ Deletes an indice.
 Returns an object with the following property:
   - `acknowledged`: boolean, will be `true` in case of success, `false` otherwise.
 
+####  indices.metrics([{Object} options]) : Promise
+Returns an array of all indices with their name and the number of documents.
+
+Example of result:
+```js
+{
+  "took": 148,
+  "docs": 344381732,
+  "dateCoverage": {
+    "min": 1375225410000,
+    "max": 1542326387000
+  },
+  "metrics": {
+    "days": 1935,
+    "titles": 1730487,
+    "platforms": 173,
+    "indices": 86
+  }
+}
+```
+
+####  indices.tops({String} index[, {Object} options]) : Promise
+Returns an array of all indices with their name and the number of documents.
+
+#### Options
+
+| Name | Type | Description |
+| --- | --- | --- |
+| size   | Number | Size of the tops |
+| period | String | Period of the tops. Possible values: today, yesterday, current_week, last_week, current_month, last_month, current_year, last_year, all (default) |
+
+Example of result:
+```js
+{
+  "took": 847,
+  "docs": 3411691,
+  "dateCoverage": {
+    "min": 1483225472000,
+    "max": 1542322684000
+  },
+  "tops": {
+    "titles": [
+      {
+        "key": "Organometallics",
+        "doc_count": 45174
+      }
+    ],
+    "publishers": [
+      {
+        "key": "Steinkopff",
+        "doc_count": 1146437
+      }
+    ],
+    "indices": [
+      {
+        "key": "univ-foobar",
+        "doc_count": 3411691
+      }
+    ]
+  }
+}
+```
+
 ####  events.delete({String} index[, {Object} options]) : Promise
 Remove consultation events from an index.
 
@@ -160,13 +232,3 @@ Returns the path of the config file, or `null` if not found.
 
 #### config.load({String|Object} config) : Promise
 Loads a default config, using either an object or a path to a config file.
-
-
-### Global options
-
-| Name | Type | Description |
-| --- | --- | --- |
-| baseurl   | String  | URL to the API endpoint (ex: https://ezmesure.couperin.org/api) |
-| token     | String  | JWT auth token |
-| strictSSL | Boolean | enable or disable SSL cert verification |
-| headers   | Object  | custom headers to send along with the request |

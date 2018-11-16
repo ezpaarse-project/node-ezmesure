@@ -9,9 +9,92 @@ The [ezMESURE api](https://github.com/Inist-CNRS/node-ezmesure.git) is used.
 npm install -g ezmesure
 ```
 
-## Usage
+## Command line usage
 
-### Module
+The module provides an `ezmesure` command (aliased `ezm`).
+
+### Global options
+
+| Name | Type | Description |
+| --- | --- | --- |
+| -u, --base-url  | String  | API URL (ex: https://ezmesure-preprod.couperin.org/api) |
+| -t, --token     | String  | The auth token to use |
+| -k, --insecure  | String  | Allow connections to SSL without certs |
+| -m, --timeout   | Number  | Request timeout in milliseconds |
+| --version       | Boolean | Print the version number |
+| --help          | Boolean | Show some help |
+
+You can get help for any command by typing `ezmesure <command> help`.
+
+When using node-ezmesure on the command line, any `.ezmesurerc` file located in the current directory or any of its parents will be used as default
+
+### ezmesure indices list
+List available indices
+
+### ezmesure indices delete \<index\>
+Delete \<index\>
+
+### ezmesure indices insert \<index\> \<files..\>
+Insert \<files\> into an \<index\>.
+
+#### Options
+
+| Name | Type | Description |
+| --- | --- | --- |
+| -z, --gunzip   | String  | Uncompress Gzip files locally |
+| -n, --no-store | String  | Disable storing uploaded data in your online space |
+| -s, --split    | String  | Split a multivalued field. Format: "fieldname(delimitor)" |
+
+#### Examples
+```bash
+  # Insert CSV files from ezpaarse-results into univ-foobar
+  ezmesure indices insert univ-foobar ezpaarse-results/*.csv
+```
+
+### ezmesure metrics
+Get overall metrics from the API
+
+### ezmesure events delete \<index\>
+Delete consultation events from \<index\>
+
+#### Options
+
+| Name | Type | Description |
+| --- | --- | --- |
+| --from | String  | Minimum date of the events that should be removed. Can be either a date or datetime in ISO format. |
+| --to   | String  | Maximum date of the events that should be removed. Can be either a date or datetime in ISO format. |
+
+#### Examples
+```bash
+  # Remove consultations from univ-foobar that
+  ezmesure events delete univ-foobar --from
+```
+
+### ezmesure tops \<index\>
+Give top metrics for a given \<index\>
+
+#### Options
+
+| Name | Type | Description |
+| --- | --- | --- |
+| -s, --size | Number  | Size of the tops |
+| -p, --period   | String  | Period of the tops. Possible values: today, yesterday, current_week, last_week, current_month, last_month, current_year, last_year, all (default) |
+
+#### Examples
+```bash
+  # Get a top 10 for the last month
+  ezmesure tops univ-foo -s 10 -p last_month
+  
+  # Get a top 3 for the whole index
+  ezmesure tops univ-foo -s 10 -p all
+```
+
+### ezmesure depositors refresh
+Refresh the depositors list
+
+## Module
+
+### Usage
 
 ```shell
 const ezmesure = require('ezmesure');
@@ -22,28 +105,6 @@ ezmesure.indices.list().then(indiceList => {
   console.error(err);
 });
 ```
-
-### Command line
-The module provides an `ezmesure` command. Use `--help` to get mor details about the way it works:
-```shell
-ezmesure --help
-Commands:
-  indices <command>  Manage indices
-
-Options:
-  -u, --base-url  API URL (ex: https://ezmesure-preprod.couperin.org/api)
-  -t, --token     Auth token
-  -k, --insecure  Allow connections to SSL without certs               [boolean]
-  --help          Show help                                            [boolean]
-
-Examples:
-  ezmesure indices list
-  ezmesure indices delete univ-nancy
-
-```
-When using node-ezmesure on the command line, any `.ezmesurerc` file located in the current directory or any of its parents will be used as default
-
-## API
 
 ### Methods
 
@@ -59,7 +120,7 @@ Example of result:
 ]
 ```
 
-####  indices.insert({String|Stream} file, {String} indice[, {Object} options]) : Promise
+####  indices.insert({String|Stream} file, {String} index[, {Object} options]) : Promise
 Inserts a file (given either a path or a readable stream) into an indice.
 Returns an object with the following properties:
   - `inserted`: number of documents successfuly inserted.
@@ -67,10 +128,31 @@ Returns an object with the following properties:
   - `failed`: number of documents that failed to be inserted.
   - `errors`: an array containing the 10 first errors generated during the insertion.
 
-####  indices.delete({String} indice[, {Object} options]) : Promise
+####  indices.delete({String} index[, {Object} options]) : Promise
 Deletes an indice.
 Returns an object with the following property:
   - `acknowledged`: boolean, will be `true` in case of success, `false` otherwise.
+
+####  events.delete({String} index[, {Object} options]) : Promise
+Remove consultation events from an index.
+
+##### Options
+
+| Name | Type | Description |
+| --- | --- | --- |
+| from | String  | Minimum date of the events that should be removed. Can be either a date or datetime in ISO format. |
+| to   | String  | Maximum date of the events that should be removed. Can be either a date or datetime in ISO format. |
+
+####  depositors.refresh([{Object} options]) : Promise
+Refresh the depositor list and return an array of all indices with their name and the number of documents.
+
+Example of result:
+```js
+[
+  { name: 'University of Foobar', prefix: 'univ-foobar', count: 35133, result: 'created' },
+  { name: 'University of Barfoo', prefix: 'univ-barfoo', count: 31923, result: 'created' }
+]
+```
 
 #### config.find([{String} startPath]) : Promise
 Looks for a `.ezmesurerc` file in the given directory (defaulting to the working directory) and all its parents.
@@ -80,8 +162,11 @@ Returns the path of the config file, or `null` if not found.
 Loads a default config, using either an object or a path to a config file.
 
 
-## Options
-  - {String} `baseurl`: URL to the API endpoint (ex: https://ezmesure.couperin.org/api)
-  - {String} `token`: JWT auth token
-  - {Boolean} `strictSSL`: enable or disable SSL cert verification
-  - {Object} `headers`: custom headers to send along with the request
+### Global options
+
+| Name | Type | Description |
+| --- | --- | --- |
+| baseurl   | String  | URL to the API endpoint (ex: https://ezmesure.couperin.org/api) |
+| token     | String  | JWT auth token |
+| strictSSL | Boolean | enable or disable SSL cert verification |
+| headers   | Object  | custom headers to send along with the request |

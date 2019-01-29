@@ -1,12 +1,10 @@
 # node-ezmesure
 
-A NodeJS wrapper around ezmesure API
-
-The [ezMESURE api](https://github.com/Inist-CNRS/node-ezmesure.git) is used.
+A NodeJS wrapper around [ezMESURE API](https://ezmesure.couperin.org/api).
 
 ## Installation
 ```shell
-npm install -g ezmesure
+npm install -g @ezpaarse-project/ezmesure
 ```
 
 ## Command line usage

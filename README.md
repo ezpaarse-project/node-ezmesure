@@ -108,7 +108,7 @@ ezmesure.indices.list().then(indiceList => {
 
 | Name | Type | Description |
 | --- | --- | --- |
-| baseurl   | String  | URL to the API endpoint (ex: https://ezmesure.couperin.org/api) |
+| baseUrl   | String  | URL to the API endpoint (ex: https://ezmesure.couperin.org/api) |
 | token     | String  | JWT auth token |
 | strictSSL | Boolean | enable or disable SSL cert verification |
 | headers   | Object  | custom headers to send along with the request |

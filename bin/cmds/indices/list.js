@@ -1,12 +1,11 @@
-'use strict';
 
-const ezmesure = require('../../..');
 const co = require('co');
+const ezmesure = require('../../..');
 
 exports.command = 'list';
-exports.desc    = 'List indices';
+exports.desc = 'List indices';
 exports.builder = {};
-exports.handler = co.wrap(function* (argv) {
+exports.handler = co.wrap(function* handler(argv) {
   const options = {};
 
   if (argv.u) { options.baseUrl = argv.u; }
@@ -23,7 +22,8 @@ exports.handler = co.wrap(function* (argv) {
   }
 
   if (list.length === 0) {
-    return console.log('No indices');
+    console.log('No indices');
+    return;
   }
 
   // Getting the size of the longest name for pretty indentation
@@ -31,7 +31,7 @@ exports.handler = co.wrap(function* (argv) {
 
   console.log(`Index ${' '.repeat(maxChars - 4)} Documents`);
 
-  list.forEach(index => {
+  list.forEach((index) => {
     const spacing = '-'.repeat(maxChars - index.name.length + 1);
     console.log(`${index.name} ${spacing} ${index.docs}`);
   });

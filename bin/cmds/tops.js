@@ -1,20 +1,19 @@
-'use strict';
 
-const ezmesure = require('../..');
 const co = require('co');
+const ezmesure = require('../..');
 
 exports.command = 'tops <index>';
-exports.desc    = 'Give top metrics for a given index';
-exports.builder = function (yargs) {
+exports.desc = 'Give top metrics for a given index';
+exports.builder = function builder(yargs) {
   return yargs.option('s', {
     alias: 'size',
-    describe: 'Size of the tops'
+    describe: 'Size of the tops',
   }).option('p', {
     alias: 'period',
-    describe: 'Period of the tops'
+    describe: 'Period of the tops',
   });
 };
-exports.handler = co.wrap(function* (argv) {
+exports.handler = co.wrap(function* handler(argv) {
   const options = {};
 
   if (argv.u) { options.baseUrl = argv.u; }
@@ -35,7 +34,7 @@ exports.handler = co.wrap(function* (argv) {
   const {
     docs = 0,
     dateCoverage = {},
-    tops = {}
+    tops = {},
   } = result;
 
   const minDate = new Date(dateCoverage.min).toLocaleDateString();
@@ -44,15 +43,15 @@ exports.handler = co.wrap(function* (argv) {
   console.log(`Date coverage: from ${minDate} to ${maxDate}`);
   console.log(`Total events: ${docs}`);
 
-  for (const metric in tops) {
+  for (const [metric, buckets] of Object.entries(tops)) {
     console.log(`\n   Top ${metric}   `);
     console.log('-'.repeat(metric.length + 10));
-    const buckets = tops[metric];
 
     // Getting the size of the longest doc count for pretty indentation
-    const maxChars = buckets.reduce((prev, cur) => Math.max(prev, cur.doc_count.toString().length), 0);
+    const getLongestCount = (prev, cur) => Math.max(prev, cur.doc_count.toString().length);
+    const maxChars = buckets.reduce(getLongestCount, 0);
 
-    buckets.forEach(bucket => {
+    buckets.forEach((bucket) => {
       const spacing = '-'.repeat(maxChars - bucket.doc_count.toString().length + 1);
       console.log(`${bucket.doc_count} ${spacing} ${bucket.key}`);
     });

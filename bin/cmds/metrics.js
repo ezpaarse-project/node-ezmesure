@@ -1,11 +1,10 @@
-'use strict';
 
-const ezmesure = require('../..');
 const co = require('co');
+const ezmesure = require('../..');
 
 exports.command = 'metrics';
-exports.desc    = 'Get overall metrics';
-exports.handler = co.wrap(function* (argv) {
+exports.desc = 'Get overall metrics';
+exports.handler = co.wrap(function* handler(argv) {
   const options = {};
 
   if (argv.u) { options.baseUrl = argv.u; }
@@ -24,7 +23,7 @@ exports.handler = co.wrap(function* (argv) {
   const {
     docs = 0,
     dateCoverage = {},
-    metrics = {}
+    metrics = {},
   } = result;
 
   const minDate = new Date(dateCoverage.min).toLocaleDateString();

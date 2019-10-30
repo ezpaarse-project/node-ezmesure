@@ -12,7 +12,7 @@
   },
   "scripts": {
     "test": "mocha test",
-    "lint": "eslint bin/ bin/ezmesure test/"
+    "lint": "eslint . --ext .js"
   },
   "repository": {
     "type": "git",

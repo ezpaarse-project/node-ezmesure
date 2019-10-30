@@ -64,8 +64,8 @@ Delete consultation events from \<index\>
 
 #### Examples
 ```bash
-  # Remove consultations from univ-foobar that
-  ezmesure events delete univ-foobar --from
+  # Remove consultations from univ-foobar in 2018
+  ezmesure events delete univ-foobar --from 2018-01-01T00:00:00 --to 2019-01-01T00:00:00
 ```
 
 ### ezmesure tops \<index\>

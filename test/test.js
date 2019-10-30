@@ -31,7 +31,7 @@ describe('ezMESURE', () => {
   });
 
   it('should correctly create index univ-test from gz file(@04)', async () => {
-    const rep = await ezmesure.indices.insert(testFileGZ, 'univ-test', { store: false, strictSSL: false })
+    const rep = await ezmesure.indices.insert(testFileGZ, 'univ-test', { store: false, strictSSL: false });
     expect(rep).to.have.property('inserted', 5);
   });
 

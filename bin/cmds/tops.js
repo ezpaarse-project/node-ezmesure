@@ -1,5 +1,4 @@
 
-const co = require('co');
 const ezmesure = require('../..');
 
 exports.command = 'tops <index>';
@@ -13,7 +12,7 @@ exports.builder = function builder(yargs) {
     describe: 'Period of the tops',
   });
 };
-exports.handler = co.wrap(function* handler(argv) {
+exports.handler = async function handler(argv) {
   const options = {};
 
   if (argv.u) { options.baseUrl = argv.u; }
@@ -25,7 +24,7 @@ exports.handler = co.wrap(function* handler(argv) {
 
   let result;
   try {
-    result = yield ezmesure.indices.tops(argv.index, options);
+    result = await ezmesure.indices.tops(argv.index, options);
   } catch (err) {
     console.error(err.statusCode === 401 ? 'Invalid token' : err.message);
     process.exit(1);
@@ -56,4 +55,4 @@ exports.handler = co.wrap(function* handler(argv) {
       console.log(`${bucket.doc_count} ${spacing} ${bucket.key}`);
     });
   }
-});
+};

@@ -1,11 +1,10 @@
 
-const co = require('co');
 const ezmesure = require('../../..');
 
 exports.command = 'list';
 exports.desc = 'List indices';
 exports.builder = {};
-exports.handler = co.wrap(function* handler(argv) {
+exports.handler = async function handler(argv) {
   const options = {};
 
   if (argv.u) { options.baseUrl = argv.u; }
@@ -15,7 +14,7 @@ exports.handler = co.wrap(function* handler(argv) {
 
   let list;
   try {
-    list = yield ezmesure.indices.list(options);
+    list = await ezmesure.indices.list(options);
   } catch (err) {
     console.error(err.statusCode === 401 ? 'Invalid token' : err.message);
     process.exit(1);
@@ -35,4 +34,4 @@ exports.handler = co.wrap(function* handler(argv) {
     const spacing = '-'.repeat(maxChars - index.name.length + 1);
     console.log(`${index.name} ${spacing} ${index.docs}`);
   });
-});
+};

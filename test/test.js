@@ -8,8 +8,6 @@ const testFile        = path.join(__dirname, '/test-sample.csv');
 const testFileGZ      = path.join(__dirname, '/test-sample-compressed.csv.gz');
 
 describe('ezMESURE', () => {
-  before(() => ezmesure.config.load(path.resolve(__dirname, '../.ezmesurerc')));
-
   it('should correctly get index list (@01)', async () => {
     const list = await ezmesure.indices.list({ strictSSL: false });
     expect(list).to.be.an('array');

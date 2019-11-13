@@ -15,7 +15,7 @@ exports.builder = function builder(yargs) {
 };
 exports.handler = async function handler(argv) {
   const scope = scopes[argv.global ? 'global' : 'local'];
-  const editor = argv.editor || process.env.EDITOR || (/^win/.test(process.platform) ? 'notepad' : 'vim');
+  const editor = argv.editor || process.env.EDITOR || (/^win/.test(process.platform) ? 'notepad' : 'vi');
 
   const args = editor.split(/\s+/);
   const bin = args.shift();

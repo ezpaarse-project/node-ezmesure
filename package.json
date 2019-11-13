@@ -30,6 +30,7 @@
   },
   "homepage": "https://github.com/Inist-CNRS/node-ezmesure#readme",
   "dependencies": {
+    "enquirer": "^2.3.2",
     "fs-extra": "^8.1.0",
     "lodash.get": "^4.4.2",
     "lodash.set": "^4.3.2",

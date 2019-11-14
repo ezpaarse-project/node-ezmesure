@@ -1,6 +1,9 @@
 #!/usr/bin/env node
 
 const yargs = require('yargs');
+const config = require('../lib/config');
+
+config.loadEnv();
 
 yargs.commandDir('cmds')
   .option('u', {

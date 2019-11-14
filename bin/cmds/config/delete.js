@@ -1,6 +1,6 @@
 const fs = require('fs-extra');
 const unset = require('lodash.unset');
-const { scopes } = require('../../../lib/config');
+const scopes = require('../../../lib/config').getScopes();
 
 exports.command = 'delete <key>';
 exports.desc = 'Delete a key in the config';

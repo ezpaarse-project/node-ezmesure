@@ -1,6 +1,6 @@
 const fs = require('fs-extra');
 const set = require('lodash.set');
-const { scopes } = require('../../../lib/config');
+const scopes = require('../../../lib/config').getScopes();
 
 exports.command = 'set <key> <value>';
 exports.desc = 'Set the value of a key in the config';

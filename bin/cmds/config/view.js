@@ -1,4 +1,4 @@
-const { scopes } = require('../../../lib/config');
+const scopes = require('../../../lib/config').getScopes();
 
 exports.command = 'view';
 exports.desc = 'View current configuration';

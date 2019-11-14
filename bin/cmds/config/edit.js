@@ -1,7 +1,7 @@
 const fs = require('fs-extra');
 const { prompt } = require('enquirer');
 const { spawn } = require('child_process');
-const { scopes } = require('../../../lib/config');
+const scopes = require('../../../lib/config').getScopes();
 
 exports.command = 'edit';
 exports.desc = 'Edit configuration';

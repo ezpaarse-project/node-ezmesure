@@ -2,12 +2,15 @@
 const path       = require('path');
 const { expect } = require('chai');
 const ezmesure   = require('../index.js');
+const config     = require('../lib/config');
 
 const invalidTestFile = path.join(__dirname, '/test-sample-invalid.csv');
 const testFile        = path.join(__dirname, '/test-sample.csv');
 const testFileGZ      = path.join(__dirname, '/test-sample-compressed.csv.gz');
 
 describe('ezMESURE', () => {
+  before(() => config.loadEnv());
+
   it('should correctly get index list (@01)', async () => {
     const list = await ezmesure.indices.list({ strictSSL: false });
     expect(list).to.be.an('array');

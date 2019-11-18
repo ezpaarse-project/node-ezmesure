@@ -15,7 +15,17 @@ exports.handler = async function handler(argv) {
   const scope = scopes[argv.global ? 'global' : 'local'];
   const config = scope.config || {};
 
-  set(config, argv.key, argv.value);
+  let { value } = argv;
+
+  if (/^true$/i.test(value)) {
+    value = true;
+  } else if (/^false$/i.test(value)) {
+    value = false;
+  } else if (/^[0-9]+$/.test(value)) {
+    value = Number.parseInt(value, 10);
+  }
+
+  set(config, argv.key, value);
 
   await fs.ensureFile(scope.location);
   await fs.writeFile(scope.location, JSON.stringify(config, null, 2));

@@ -1,11 +1,9 @@
-'use strict';
 
 const ezmesure = require('../..');
-const co = require('co');
 
 exports.command = 'metrics';
-exports.desc    = 'Get overall metrics';
-exports.handler = co.wrap(function* (argv) {
+exports.desc = 'Get overall metrics';
+exports.handler = async function handler(argv) {
   const options = {};
 
   if (argv.u) { options.baseUrl = argv.u; }
@@ -15,7 +13,7 @@ exports.handler = co.wrap(function* (argv) {
 
   let result;
   try {
-    result = yield ezmesure.indices.metrics(options);
+    result = await ezmesure.indices.metrics(options);
   } catch (err) {
     console.error(err.statusCode === 401 ? 'Invalid token' : err.message);
     process.exit(1);
@@ -24,7 +22,7 @@ exports.handler = co.wrap(function* (argv) {
   const {
     docs = 0,
     dateCoverage = {},
-    metrics = {}
+    metrics = {},
   } = result;
 
   const minDate = new Date(dateCoverage.min).toLocaleDateString();
@@ -35,4 +33,4 @@ exports.handler = co.wrap(function* (argv) {
   console.log(`Indices --- ${metrics.indices || 'N/A'}`);
   console.log(`Titles ---- ${metrics.titles || 'N/A'}`);
   console.log(`Platforms - ${metrics.platforms || 'N/A'}`);
-});
+};

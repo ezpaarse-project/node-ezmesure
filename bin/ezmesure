@@ -1,48 +1,36 @@
 #!/usr/bin/env node
-'use strict';
 
-const co       = require('co');
-const yargs    = require('yargs');
-const ezmesure = require('..');
+const yargs = require('yargs');
+const config = require('../lib/config');
 
-co(function* () {
-  try {
-    const configFile = yield ezmesure.config.find();
+config.loadEnv();
 
-    if (configFile) {
-      yield ezmesure.config.load(configFile);
-    }
-  } catch (err) {
-    if (err.code !== 'ENOENT') { throw err; }
-  }
-
-  yargs.commandDir('cmds')
-    .option('u', {
-      alias: 'base-url',
-      describe: 'API URL (ex: https://ezmesure-preprod.couperin.org/api)',
-      global: true
-    })
-    .option('t', {
-      alias: 'token',
-      describe: 'Auth token',
-      global: true
-    })
-    .option('k', {
-      alias: 'insecure',
-      describe: 'Allow connections to SSL without certs',
-      boolean: true,
-      global: true
-    })
-    .option('m', {
-      alias: 'timeout',
-      describe: 'Request timeout in milliseconds',
-      number: true,
-      global: true
-    })
-    .example('ezmesure indices list')
-    .example('ezmesure indices insert univ-example ezpaarse-results.csv')
-    .example('ezmesure indices delete univ-example')
-    .demandCommand(1)
-    .help()
-    .argv;
-});
+yargs.commandDir('cmds')
+  .option('u', {
+    alias: 'base-url',
+    describe: 'API URL (ex: https://ezmesure-preprod.couperin.org/api)',
+    global: true,
+  })
+  .option('t', {
+    alias: 'token',
+    describe: 'Auth token',
+    global: true,
+  })
+  .option('k', {
+    alias: 'insecure',
+    describe: 'Allow connections to SSL without certs',
+    boolean: true,
+    global: true,
+  })
+  .option('m', {
+    alias: 'timeout',
+    describe: 'Request timeout in milliseconds',
+    number: true,
+    global: true,
+  })
+  .example('ezmesure indices list')
+  .example('ezmesure indices insert univ-example ezpaarse-results.csv')
+  .example('ezmesure indices delete univ-example')
+  .demandCommand(1)
+  .help()
+  .parse();

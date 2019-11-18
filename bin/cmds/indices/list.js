@@ -1,12 +1,10 @@
-'use strict';
 
 const ezmesure = require('../../..');
-const co = require('co');
 
 exports.command = 'list';
-exports.desc    = 'List indices';
+exports.desc = 'List indices';
 exports.builder = {};
-exports.handler = co.wrap(function* (argv) {
+exports.handler = async function handler(argv) {
   const options = {};
 
   if (argv.u) { options.baseUrl = argv.u; }
@@ -16,14 +14,15 @@ exports.handler = co.wrap(function* (argv) {
 
   let list;
   try {
-    list = yield ezmesure.indices.list(options);
+    list = await ezmesure.indices.list(options);
   } catch (err) {
     console.error(err.statusCode === 401 ? 'Invalid token' : err.message);
     process.exit(1);
   }
 
   if (list.length === 0) {
-    return console.log('No indices');
+    console.log('No indices');
+    return;
   }
 
   // Getting the size of the longest name for pretty indentation
@@ -31,8 +30,8 @@ exports.handler = co.wrap(function* (argv) {
 
   console.log(`Index ${' '.repeat(maxChars - 4)} Documents`);
 
-  list.forEach(index => {
+  list.forEach((index) => {
     const spacing = '-'.repeat(maxChars - index.name.length + 1);
     console.log(`${index.name} ${spacing} ${index.docs}`);
   });
-});
+};

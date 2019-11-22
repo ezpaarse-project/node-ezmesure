@@ -1,5 +1,5 @@
 {
-  "name": "ezmesure",
+  "name": "@ezpaarse-project/ezmesure",
   "version": "2.0.1",
   "description": "a wrapper around ezmesure API",
   "main": "index.js",

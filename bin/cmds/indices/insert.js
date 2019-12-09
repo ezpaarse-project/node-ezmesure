@@ -1,33 +1,53 @@
 
-const ProgressBar = require('progress');
-const fs          = require('fs-extra');
-const zlib        = require('zlib');
-const path        = require('path');
-const ezmesure    = require('../../..');
+const fs       = require('fs-extra');
+const zlib     = require('zlib');
+const path     = require('path');
+const logger   = require('../../../lib/logger')();
+const ezmesure = require('../../..');
 
 exports.command = 'insert <index> <files..>';
 exports.desc = 'Insert <files> into an <index>';
 exports.builder = function builder(yargs) {
-  return yargs.option('z', {
-    alias: 'gunzip',
-    describe: 'Uncompress Gzip files locally',
-    boolean: true,
-  }).option('n', {
-    alias: 'no-store',
-    describe: 'Disable storing uploaded data in your online space',
-    boolean: true,
-  }).option('s', {
-    alias: 'split',
-    describe: 'Split a multivalued field. Format: "fieldname(delimitor)"',
-  });
+  return yargs
+    .option('z', {
+      alias: 'gunzip',
+      describe: 'Uncompress Gzip files locally',
+      boolean: true,
+    })
+    .option('n', {
+      alias: 'no-store',
+      describe: 'Disable storing uploaded data in your online space',
+      boolean: true,
+    })
+    .option('r', {
+      alias: 'recursive',
+      describe: 'Look for files in subdirectories',
+      boolean: true,
+    })
+    .option('s', {
+      alias: 'split',
+      describe: 'Split a multivalued field. Format: "fieldname(delimitor)"',
+    })
+    .option('ext', {
+      describe: 'Specify file extensions - default: .csv,.csv.gz',
+    });
 };
 exports.handler = async function handler(argv) {
-  const { files, index } = argv;
+  const { files: filePaths, index, recursive } = argv;
 
   const globalOptions = {
     gunzip: argv.gunzip,
     headers: {},
   };
+
+  let extensions = ['.csv', '.csv.gz'];
+
+  if (typeof argv.ext === 'string') {
+    extensions = argv.ext.split(',').map((ext) => {
+      const e = ext.trim();
+      return e.startsWith('.') ? e : `.${e}`;
+    });
+  }
 
   if (argv.u) { globalOptions.baseUrl = argv.u; }
   if (argv.token) { globalOptions.token = argv.token; }
@@ -36,6 +56,9 @@ exports.handler = async function handler(argv) {
   if (argv.n) { globalOptions.store = false; }
   if (argv.split) { globalOptions.split = argv.split; }
 
+  let nbSkipped = 0;
+  let nbFailed = 0;
+
   const aggs = {
     total: 0,
     inserted: 0,
@@ -43,78 +66,166 @@ exports.handler = async function handler(argv) {
     failed: 0,
   };
 
+  const files = await resolveFiles(filePaths, { extensions, recursive, root: true });
+
   for (const file of files) {
-    const res = await insertFile(file, index, globalOptions);
+    const basename = file.path.substr(0, file.path.length - file.extension.length);
+    const reportFile = `${basename}.report.json`;
+    let report;
 
-    ['total', 'inserted', 'updated', 'failed'].forEach((cat) => {
-      res[cat] = parseInt(res[cat], 10);
-      aggs[cat] += res[cat] || 0;
-    });
+    try {
+      report = JSON.parse(await fs.readFile(reportFile));
+    } catch (e) {
+      if (e.code !== 'ENOENT') {
+        logger.error(e.message);
+        continue; // eslint-disable-line no-continue
+      }
+    }
 
-    printMetric('Total sent', res.total);
-    printMetric('  Inserted', res.inserted, res.total);
-    printMetric('  Updated', res.updated, res.total);
-    printMetric('  Failed', res.failed, res.total);
+    if (report) {
+      const reportDate = (new Date(report.date)).getTime();
+
+      if (!Number.isNaN(reportDate) && file.mtime.getTime() <= reportDate) {
+        logger.skip(path.basename(file.path));
+        nbSkipped += 1;
+        continue; // eslint-disable-line no-continue
+      }
+    }
+
+    try {
+      await fs.remove(reportFile);
+    } catch (e) {
+      if (e.code !== 'ENOENT') {
+        logger.error(e.message);
+      }
+    }
+
+    let res;
+    try {
+      res = await insertFile(file.path, index, globalOptions);
+    } catch (e) {
+      nbFailed += 1;
+      continue; // eslint-disable-line no-continue
+    }
+
+    aggs.total += Number.parseInt(res.total, 10) || 0;
+    aggs.inserted += Number.parseInt(res.inserted, 10) || 0;
+    aggs.updated += Number.parseInt(res.updated, 10) || 0;
+    aggs.failed += Number.parseInt(res.failed, 10) || 0;
+
+    printMetrics(res);
 
     if (res.errors && res.errors.length) {
-      printErrors(res.errors);
+      res.errors.forEach((error) => {
+        let msg = `Error: ${error.reason || error.type}`;
+        if (error.caused_by) {
+          msg += ` (caused by: ${error.caused_by.reason || error.caused_by.type})`;
+        }
+        logger.warn(msg);
+      });
     }
+
+    const reportContent = {
+      date: new Date(),
+      response: res,
+    };
+
+    await fs.writeFile(reportFile, JSON.stringify(reportContent, null, 2));
   }
 
-  console.log();
-  console.log('Global metrics');
-  console.log('--------------');
-  printMetric('Files', files.length);
-  printMetric('Total sent', aggs.total);
-  printMetric('  Inserted', aggs.inserted, aggs.total);
-  printMetric('  Updated', aggs.updated, aggs.total);
-  printMetric('  Failed', aggs.failed, aggs.total);
+  const msg = `${files.length - nbSkipped} files loaded, ${nbSkipped} skipped, ${nbFailed} failed`;
+
+  if (nbFailed > 0) {
+    logger.error(msg);
+  } else {
+    logger.loaded(msg);
+  }
+
+  printMetrics(aggs);
+
+  process.exit(nbFailed > 0 ? 1 : 0);
 };
 
-function printMetric(label, value, total) {
-  let msg = `  ${label}: ${value}`;
+function printMetrics(metrics) {
+  const {
+    inserted,
+    total,
+    updated,
+    failed,
+  } = metrics;
 
-  if (total) {
-    const percent = Math.round((value / total) * 100);
-    msg += ` (${percent}%)`;
-  }
+  const percentInserted = `${toPercent(inserted, total)}%`.padStart(4);
+  const percentUpdated = `${toPercent(updated, total)}%`.padStart(4);
+  const percentFailed = `${toPercent(failed, total)}%`.padStart(4);
 
-  console.log(msg);
+  const totalInserted = `${inserted}/${total}`;
+  const totalUpdated = `${updated}/${total}`;
+  const totalFailed = `${failed}/${total}`;
+
+  const maxLength = Math.max(totalInserted.length, totalUpdated.length, totalFailed.length);
+
+  logger.info(`Inserted ${percentInserted} ${totalInserted.padStart(maxLength)}`);
+  logger.info(`Updated  ${percentUpdated} ${totalUpdated.padStart(maxLength)}`);
+  logger.info(`Failed   ${percentFailed} ${totalFailed.padStart(maxLength)}`);
 }
 
-function printErrors(errors) {
-  console.log('  Errors:');
+function toPercent(value, total) {
+  if (!total) { return 0; }
+  return Math.round((value / total) * 100);
+}
 
-  errors.forEach((error) => {
-    let msg = `    ${error.reason || error.type}`;
-    if (error.caused_by) {
-      msg += ` (caused by: ${error.caused_by.reason || error.caused_by.type})`;
+async function resolveFiles(filePaths, { extensions, recursive, root }) {
+  let files = [];
+
+  for (const file of filePaths) {
+    const resolvedPath = path.resolve(file);
+    const stat = await fs.stat(resolvedPath);
+
+    if (stat.isFile()) {
+      const extension = extensions.find((ext) => file.endsWith(ext));
+
+      if (extension) {
+        files.push({
+          path: resolvedPath,
+          mtime: stat.mtime,
+          extension,
+        });
+      }
+    } else if (stat.isDirectory() && (recursive || root)) {
+      const subFiles = (await fs.readdir(resolvedPath)).map((f) => path.resolve(resolvedPath, f));
+
+      files = [
+        ...files,
+        ...await resolveFiles(subFiles, { extensions, recursive }),
+      ];
     }
-    console.log(msg);
-  });
+  }
+
+  return files;
 }
 
 async function insertFile(file, index, globalOptions) {
-  const stats     = await fs.stat(file);
-  const options   = { ...globalOptions };
-  const barTokens = {
-    index,
-    file: path.basename(file),
-  };
-
-  console.log();
-
-  const bar = new ProgressBar('  :file => :index [:bar] :percent :etas  ', {
-    complete: '=',
-    incomplete: ' ',
-    width: 50,
-    total: stats.size,
-  });
+  const stats    = await fs.stat(file);
+  const options  = { ...globalOptions };
+  const filename = path.basename(file);
 
   const fileReader = fs.createReadStream(file);
+  const total = stats.size;
+  let loaded = 0;
+
+  const interval = setInterval(() => {
+    const percent = Math.floor((loaded / total) * 100);
+    logger.loading(`[${percent}%] ${filename}`);
+  }, 5000);
 
   fileReader.on('data', (chunk) => {
-    bar.tick(chunk.length, barTokens);
+    loaded += chunk.length;
+  });
+  fileReader.on('end', () => {
+    logger.loaded(filename);
+  });
+  fileReader.on('close', () => {
+    clearInterval(interval);
   });
 
   let stream = fileReader;

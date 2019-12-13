@@ -33,15 +33,17 @@ List available indices
 Delete \<index\>
 
 ### ezmesure indices insert \<index\> \<files..\>
-Insert \<files\> into an \<index\>.
+Insert \<files\> into an \<index\>. Directories are also supported, in which case all files matching `--ext` are inserted.
 
 #### Options
 
 | Name | Type | Description |
 | --- | --- | --- |
-| -z, --gunzip   | String  | Uncompress Gzip files locally |
-| -n, --no-store | String  | Disable storing uploaded data in your online space |
-| -s, --split    | String  | Split a multivalued field. Format: "fieldname(delimitor)" |
+| -z, --gunzip    | String  | Uncompress Gzip files locally |
+| -n, --no-store  | String  | Disable storing uploaded data in your online space |
+| -s, --split     | String  | Split a multivalued field. Format: "fieldname(delimitor)" |
+| -r, --recursive | Boolean | Look for files in subdirectories |
+| --ext           | String  | Specify file extensions - default: `.csv,.csv.gz` |
 
 #### Examples
 ```bash

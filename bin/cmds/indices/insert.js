@@ -83,7 +83,7 @@ exports.handler = async function handler(argv) {
       }
     }
 
-    if (report) {
+    if (report && !report.error) {
       const reportDate = (new Date(report.date)).getTime();
 
       if (!Number.isNaN(reportDate) && file.mtime.getTime() <= reportDate) {
@@ -101,6 +101,11 @@ exports.handler = async function handler(argv) {
       }
     }
 
+    const reportContent = {
+      date: new Date(),
+      error: null,
+    };
+
     let res;
     try {
       res = await insertFile(file, index, globalOptions);
@@ -108,6 +113,15 @@ exports.handler = async function handler(argv) {
       nbFailed += 1;
       logger.error(e.message);
       logger.failed(file.basename);
+
+      reportContent.error = e.message;
+
+      try {
+        await fs.writeFile(reportFile, JSON.stringify(reportContent, null, 2));
+      } catch (err) {
+        logger.error(err.message);
+      }
+
       continue; // eslint-disable-line no-continue
     }
 
@@ -130,12 +144,13 @@ exports.handler = async function handler(argv) {
       });
     }
 
-    const reportContent = {
-      date: new Date(),
-      response: res,
-    };
+    reportContent.response = res;
 
-    await fs.writeFile(reportFile, JSON.stringify(reportContent, null, 2));
+    try {
+      await fs.writeFile(reportFile, JSON.stringify(reportContent, null, 2));
+    } catch (err) {
+      logger.error(err.message);
+    }
   }
 
   const nbLoaded = files.length - nbSkipped - nbFailed;

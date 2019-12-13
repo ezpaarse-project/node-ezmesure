@@ -2,6 +2,7 @@
 const fs       = require('fs-extra');
 const zlib     = require('zlib');
 const path     = require('path');
+const chalk    = require('chalk');
 const logger   = require('../../../lib/logger')();
 const ezmesure = require('../../..');
 
@@ -69,8 +70,8 @@ exports.handler = async function handler(argv) {
   const files = await resolveFiles(filePaths, { extensions, recursive, root: true });
 
   for (const file of files) {
-    const basename = file.path.substr(0, file.path.length - file.extension.length);
-    const reportFile = `${basename}.report.json`;
+    const baseFile = file.path.substr(0, file.path.length - file.extension.length);
+    const reportFile = `${baseFile}.report.json`;
     let report;
 
     try {
@@ -86,7 +87,7 @@ exports.handler = async function handler(argv) {
       const reportDate = (new Date(report.date)).getTime();
 
       if (!Number.isNaN(reportDate) && file.mtime.getTime() <= reportDate) {
-        logger.skip(path.basename(file.path));
+        logger.skip(file.basename);
         nbSkipped += 1;
         continue; // eslint-disable-line no-continue
       }
@@ -102,11 +103,15 @@ exports.handler = async function handler(argv) {
 
     let res;
     try {
-      res = await insertFile(file.path, index, globalOptions);
+      res = await insertFile(file, index, globalOptions);
     } catch (e) {
       nbFailed += 1;
+      logger.error(e.message);
+      logger.failed(file.basename);
       continue; // eslint-disable-line no-continue
     }
+
+    logger.loaded(file.basename);
 
     aggs.total += Number.parseInt(res.total, 10) || 0;
     aggs.inserted += Number.parseInt(res.inserted, 10) || 0;
@@ -133,12 +138,24 @@ exports.handler = async function handler(argv) {
     await fs.writeFile(reportFile, JSON.stringify(reportContent, null, 2));
   }
 
-  const msg = `${files.length - nbSkipped} files loaded, ${nbSkipped} skipped, ${nbFailed} failed`;
+  const nbLoaded = files.length - nbSkipped - nbFailed;
+
+  let msg = 'Files: ';
+  if (nbFailed > 0) {
+    msg += chalk.red(`${nbFailed} failed, `);
+  }
+  if (nbLoaded > 0) {
+    msg += chalk.green(`${nbLoaded} loaded, `);
+  }
+  if (nbSkipped > 0) {
+    msg += chalk.yellow(`${nbSkipped} skipped, `);
+  }
+  msg += `${files.length} total`;
 
   if (nbFailed > 0) {
     logger.error(msg);
   } else {
-    logger.loaded(msg);
+    logger.info(msg);
   }
 
   printMetrics(aggs);
@@ -187,6 +204,7 @@ async function resolveFiles(filePaths, { extensions, recursive, root }) {
       if (extension) {
         files.push({
           path: resolvedPath,
+          basename: path.basename(file),
           mtime: stat.mtime,
           extension,
         });
@@ -205,24 +223,20 @@ async function resolveFiles(filePaths, { extensions, recursive, root }) {
 }
 
 async function insertFile(file, index, globalOptions) {
-  const stats    = await fs.stat(file);
-  const options  = { ...globalOptions };
-  const filename = path.basename(file);
+  const stats   = await fs.stat(file.path);
+  const options = { ...globalOptions };
 
-  const fileReader = fs.createReadStream(file);
+  const fileReader = fs.createReadStream(file.path);
   const total = stats.size;
   let loaded = 0;
 
   const interval = setInterval(() => {
     const percent = Math.floor((loaded / total) * 100);
-    logger.loading(`[${percent}%] ${filename}`);
+    logger.loading(`[${percent}%] ${file.basename}`);
   }, 5000);
 
   fileReader.on('data', (chunk) => {
     loaded += chunk.length;
-  });
-  fileReader.on('end', () => {
-    logger.loaded(filename);
   });
   fileReader.on('close', () => {
     clearInterval(interval);
@@ -230,7 +244,7 @@ async function insertFile(file, index, globalOptions) {
 
   let stream = fileReader;
 
-  if (path.extname(file).toLowerCase() === '.gz') {
+  if (path.extname(file.basename).toLowerCase() === '.gz') {
     if (globalOptions.gunzip) {
       stream = zlib.createGunzip();
       fileReader.pipe(stream);

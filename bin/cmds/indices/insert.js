@@ -170,15 +170,16 @@ exports.handler = async function handler(argv) {
   if (nbFailed > 0) {
     logger.error(msg);
   } else {
-    logger.info(msg);
+    logger.summary(msg);
   }
 
-  printMetrics(aggs);
+  printMetrics(aggs, { summary: true });
 
   process.exit(nbFailed > 0 ? 1 : 0);
 };
 
-function printMetrics(metrics) {
+function printMetrics(metrics, opts = {}) {
+  const { summary } = opts;
   const {
     inserted,
     total,
@@ -195,10 +196,11 @@ function printMetrics(metrics) {
   const totalFailed = `${failed}/${total}`;
 
   const maxLength = Math.max(totalInserted.length, totalUpdated.length, totalFailed.length);
+  const type = summary ? 'summary' : 'info';
 
-  logger.info(`Inserted ${percentInserted} ${totalInserted.padStart(maxLength)}`);
-  logger.info(`Updated  ${percentUpdated} ${totalUpdated.padStart(maxLength)}`);
-  logger.info(`Failed   ${percentFailed} ${totalFailed.padStart(maxLength)}`);
+  logger[type](`Inserted ${percentInserted} ${totalInserted.padStart(maxLength)}`);
+  logger[type](`Updated  ${percentUpdated} ${totalUpdated.padStart(maxLength)}`);
+  logger[type](`Failed   ${percentFailed} ${totalFailed.padStart(maxLength)}`);
 }
 
 function toPercent(value, total) {

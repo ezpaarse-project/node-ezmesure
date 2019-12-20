@@ -71,7 +71,7 @@ exports.handler = async function handler(argv) {
 
   for (const file of files) {
     const baseFile = file.path.substr(0, file.path.length - file.extension.length);
-    const reportFile = `${baseFile}.report.json`;
+    const reportFile = `${baseFile}.report.ezm.json`;
     let report;
 
     try {

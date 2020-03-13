@@ -140,7 +140,7 @@ exports.handler = async function handler(argv) {
         if (error.caused_by) {
           msg += ` (caused by: ${error.caused_by.reason || error.caused_by.type})`;
         }
-        logger.warn(msg);
+        logger.warning(msg);
       });
     }
 

@@ -13,23 +13,36 @@ exports.handler = function handler(argv) {
 
   ezmesure.depositors.refresh(options).then((res) => {
     let nbErrors  = 0;
-    let nbSuccess = 0;
+    let nbUpdated = 0;
+    let nbUntouched = 0;
 
     res.items.forEach((item) => {
       const name   = item.name || '...';
-      const prefix = item.prefix || 'none';
-      const count  = item.count || 0;
+      const prefix = item.indexPrefix || 'none';
+      const count  = item.indexCount || 0;
+      const docName = item.docContactName || 'none';
+      const techName = item.techContactName || 'none';
 
       if (item.error) {
         nbErrors += 1;
         console.error(`[Error] ${item.name} : ${item.error}`);
       } else {
-        console.log(`${name} (prefix: ${prefix}, count: ${count})`);
-        nbSuccess += 1;
+        console.group(`[${name}]`);
+        console.log(`Prefix: ${prefix}`);
+        console.log(`Count: ${count}`);
+        console.log(`Doc: ${docName}`);
+        console.log(`Tech: ${techName}`);
+        console.groupEnd();
+
+        if (item.updated) {
+          nbUpdated += 1;
+        } else {
+          nbUntouched += 1;
+        }
       }
     });
 
-    console.log(`${nbSuccess} updated, ${nbErrors} errors`);
+    console.log(`\n${nbUpdated} updated, ${nbUntouched} untouched, ${nbErrors} errors`);
     process.exit(nbErrors ? 1 : 0);
   }).catch((err) => {
     console.error(err.statusCode === 401 ? 'Invalid token' : err.message);

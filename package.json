@@ -1,6 +1,6 @@
 {
   "name": "@ezpaarse-project/ezmesure",
-  "version": "2.2.4",
+  "version": "2.2.5",
   "description": "a wrapper around ezmesure API",
   "main": "index.js",
   "bin": {

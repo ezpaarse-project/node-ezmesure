@@ -25,7 +25,7 @@ describe('ezMESURE', () => {
     try {
       await ezmesure.indices.insert(invalidTestFile, 'univ-test', { store: false, strictSSL: false });
     } catch (e) {
-      expect(e).to.have.property('statusCode', 400);
+      expect(e).to.have.property('status', 400);
       return null;
     }
     return Promise.reject(new Error('the request should fail'));

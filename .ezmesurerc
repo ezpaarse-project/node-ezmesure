@@ -1,4 +1,4 @@
 {
   "baseUrl": "https://localhost/api",
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImV6bWVzdXJlLWFkbWluIiwiZW1haWwiOiJhZG1pbkBhZG1pbi5jb20iLCJpYXQiOjE2ODU2MDMyOTV9.Zufu-W0UWJ8KtjtCEm0WdaMDw5ZQPh-cM3oxfB5Klvo"
+  "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE0NjY1MTEwMDN9.DGDp0pb1DlydJDubf4HCbYzntFsl-zOeXdTD3mlhPzM"
 }

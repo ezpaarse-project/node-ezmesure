@@ -1,4 +1,5 @@
 
+const get = require('lodash.get');
 const ezmesure = require('../../..');
 
 exports.command = 'list';
@@ -16,7 +17,7 @@ exports.handler = async function handler(argv) {
   try {
     list = await ezmesure.indices.list(options);
   } catch (err) {
-    console.error(err.statusCode === 401 ? 'Invalid token' : err.message);
+    console.error(get(err, 'response.status') === 401 ? 'Invalid token' : err.message);
     process.exit(1);
   }
 

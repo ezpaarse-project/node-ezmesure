@@ -1,4 +1,4 @@
-
+const get = require('lodash.get');
 const ezmesure = require('../../..');
 
 exports.command = 'refresh';
@@ -45,7 +45,7 @@ exports.handler = function handler(argv) {
     console.log(`\n${nbUpdated} updated, ${nbUntouched} untouched, ${nbErrors} errors`);
     process.exit(nbErrors ? 1 : 0);
   }).catch((err) => {
-    console.error(err.statusCode === 401 ? 'Invalid token' : err.message);
+    console.error(get(err, 'response.status') === 401 ? 'Invalid token' : err.message);
     process.exit(1);
   });
 };

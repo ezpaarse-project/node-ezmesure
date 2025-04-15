@@ -1,4 +1,4 @@
-
+const get = require('lodash.get');
 const ezmesure = require('../../..');
 
 exports.command = 'delete <index>';
@@ -15,7 +15,7 @@ exports.handler = function handler(argv) {
   ezmesure.indices.delete(argv.index, options).then(() => {
     console.log('%s deleted', argv.index);
   }).catch((err) => {
-    console.error(err.statusCode === 401 ? 'Invalid token' : err.message);
+    console.error(get(err, 'response.status') === 401 ? 'Invalid token' : err.message);
     process.exit(1);
   });
 };

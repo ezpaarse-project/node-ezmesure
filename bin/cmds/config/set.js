@@ -1,5 +1,5 @@
 const fs = require('fs-extra');
-const set = require('lodash.set');
+const set = require('lodash/set');
 const scopes = require('../../../lib/config').getScopes();
 
 exports.command = 'set <key> <value>';

@@ -31,16 +31,17 @@ exports.handler = async function handler(argv) {
   }
 
   const {
-    docs = 0,
+    docs = {},
     dateCoverage = {},
     tops = {},
   } = result;
 
   const minDate = new Date(dateCoverage.min).toLocaleDateString();
   const maxDate = new Date(dateCoverage.max).toLocaleDateString();
+  const docsCount = `${docs.relation === 'gte' ? '>=' : ''}${docs.value || 0}`;
 
   console.log(`Date coverage: from ${minDate} to ${maxDate}`);
-  console.log(`Total events: ${docs}`);
+  console.log(`Total events: ${docsCount}`);
 
   for (const [metric, buckets] of Object.entries(tops)) {
     console.log(`\n   Top ${metric}   `);

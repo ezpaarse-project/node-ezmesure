@@ -1,8 +1,9 @@
-
+const wait     = require('timers/promises').setTimeout;
 const fs       = require('fs-extra');
 const zlib     = require('zlib');
 const path     = require('path');
 const chalk    = require('chalk');
+const get      = require('lodash/get');
 const logger   = require('../../../lib/logger')();
 const ezmesure = require('../../..');
 
@@ -28,6 +29,12 @@ exports.builder = function builder(yargs) {
     .option('s', {
       alias: 'split',
       describe: 'Split a multivalued field. Format: "fieldname(delimitor)"',
+    })
+    .option('t', {
+      alias: 'max-tries',
+      default: 3,
+      describe: 'Maximum number of tries to upload a file',
+      type: 'number',
     })
     .option('ext', {
       describe: 'Specify file extensions - default: .csv,.csv.gz',
@@ -56,6 +63,13 @@ exports.handler = async function handler(argv) {
   if (argv.insecure) { globalOptions.strictSSL = false; }
   if (argv.n) { globalOptions.store = false; }
   if (argv.split) { globalOptions.split = argv.split; }
+
+  if (Number.isInteger(argv.maxTries)) {
+    globalOptions.maxTries = argv.maxTries;
+  } else {
+    console.error('Invalid --max-tries value');
+    process.exit(1);
+  }
 
   let nbSkipped = 0;
   let nbFailed = 0;
@@ -104,17 +118,25 @@ exports.handler = async function handler(argv) {
     const reportContent = {
       date: new Date(),
       error: null,
+      message: null,
     };
 
     let res;
     try {
-      res = await insertFile(file, index, globalOptions);
+      res = await tryToInsertFile(file, index, globalOptions);
     } catch (e) {
       nbFailed += 1;
-      logger.error(e.message);
-      logger.failed(file.basename);
+      const errMessage = e.message || e.code;
+      const apiMessage = get(e, 'response.data.error');
 
-      reportContent.error = e.message;
+      reportContent.error = errMessage;
+      logger.error(errMessage);
+
+      if (apiMessage) {
+        reportContent.message = apiMessage;
+        logger.error(apiMessage);
+      }
+      logger.failed(file.basename);
 
       try {
         await fs.writeFile(reportFile, JSON.stringify(reportContent, null, 2));
@@ -272,4 +294,35 @@ async function insertFile(file, index, globalOptions) {
   }
 
   return ezmesure.indices.insert(stream, index, options).then((res) => res || Promise.reject(new Error('No result')));
+}
+
+async function tryToInsertFile(file, index, globalOptions) {
+  const { maxTries } = globalOptions;
+
+  let tries = 0;
+  let res;
+
+  while (!res) {
+    tries += 1;
+
+    try {
+      res = await insertFile(file, index, globalOptions);
+      break;
+    } catch (e) {
+      if (tries >= maxTries) {
+        throw e;
+      }
+      if (e.status && e.status < 500) {
+        // If we got a valid response from the API, there's no need to retry
+        throw e;
+      }
+
+      const waitTime = (2 ** tries);
+      logger.error(e.message || e.code);
+      logger.info(`Retrying in ${waitTime} seconds...`);
+      await wait(waitTime * 1000);
+    }
+  }
+
+  return res;
 }

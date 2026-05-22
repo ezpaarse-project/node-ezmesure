@@ -11,6 +11,11 @@ exports.command = 'insert <index> <files..>';
 exports.desc = 'Insert <files> into an <index>';
 exports.builder = function builder(yargs) {
   return yargs
+    .option('f', {
+      alias: 'force',
+      describe: 'Upload files even if a successful report from a previous upload already exists',
+      boolean: true,
+    })
     .option('z', {
       alias: 'gunzip',
       describe: 'Uncompress Gzip files locally',
@@ -100,7 +105,7 @@ exports.handler = async function handler(argv) {
     if (report && !report.error) {
       const reportDate = (new Date(report.date)).getTime();
 
-      if (!Number.isNaN(reportDate) && file.mtime.getTime() <= reportDate) {
+      if (!argv.force && !Number.isNaN(reportDate) && file.mtime.getTime() <= reportDate) {
         logger.skip(file.basename);
         nbSkipped += 1;
         continue; // eslint-disable-line no-continue

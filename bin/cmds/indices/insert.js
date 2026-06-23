@@ -298,7 +298,13 @@ async function insertFile(file, index, globalOptions) {
     }
   }
 
-  return ezmesure.indices.insert(stream, index, options).then((res) => res || Promise.reject(new Error('No result')));
+  return ezmesure.indices.insert(stream, index, options)
+    .then((res) => res || Promise.reject(new Error('No result')))
+    .catch((err) => {
+      // Axios does not always close the data stream
+      fileReader.destroy(err);
+      throw err;
+    });
 }
 
 async function tryToInsertFile(file, index, globalOptions) {

@@ -35,8 +35,7 @@ exports.builder = function builder(yargs) {
       alias: 'split',
       describe: 'Split a multivalued field. Format: "fieldname(delimitor)"',
     })
-    .option('t', {
-      alias: 'max-tries',
+    .option('max-tries', {
       default: 3,
       describe: 'Maximum number of tries to upload a file',
       type: 'number',

@@ -267,7 +267,7 @@ async function resolveFiles(filePaths, { extensions, recursive, root }) {
 
 async function insertFile(file, index, globalOptions) {
   const stats   = await fs.stat(file.path);
-  const options = { ...globalOptions };
+  const options = JSON.parse(JSON.stringify(globalOptions));
 
   const fileReader = fs.createReadStream(file.path);
   const total = stats.size;

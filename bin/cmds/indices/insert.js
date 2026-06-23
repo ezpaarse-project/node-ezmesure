@@ -287,13 +287,14 @@ async function insertFile(file, index, globalOptions) {
 
   let stream = fileReader;
 
+  options.headers['content-length'] = stats.size;
+
   if (path.extname(file.basename).toLowerCase() === '.gz') {
     if (globalOptions.gunzip) {
       stream = zlib.createGunzip();
       fileReader.pipe(stream);
     } else {
       options.headers['content-encoding'] = 'application/gzip';
-      options.headers['content-length'] = stats.size;
     }
   }
 

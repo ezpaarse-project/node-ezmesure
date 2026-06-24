@@ -4,6 +4,7 @@ const zlib     = require('zlib');
 const path     = require('path');
 const chalk    = require('chalk');
 const get      = require('lodash/get');
+const throttle = require('lodash/throttle');
 const logger   = require('../../../lib/logger')();
 const ezmesure = require('../../..');
 
@@ -270,24 +271,16 @@ async function insertFile(file, index, globalOptions) {
   const options = JSON.parse(JSON.stringify(globalOptions));
 
   const fileReader = fs.createReadStream(file.path);
-  const total = stats.size;
-  let loaded = 0;
-
-  const interval = setInterval(() => {
-    const percent = Math.floor((loaded / total) * 100);
-    logger.loading(`[${percent}%] ${file.basename}`);
-  }, 5000);
-
-  fileReader.on('data', (chunk) => {
-    loaded += chunk.length;
-  });
-  fileReader.on('close', () => {
-    clearInterval(interval);
-  });
 
   let stream = fileReader;
 
   options.headers['content-length'] = stats.size;
+
+  options.onUploadProgress = throttle((progress) => {
+    const percent = Math.floor(progress.progress * 100);
+    const estimated = progress.estimated ? `${Math.floor(progress.estimated)}s` : 'N/A';
+    logger.loading(`[${percent}%] ${file.basename} | ETA: ${estimated}`);
+  }, 5000);
 
   if (path.extname(file.basename).toLowerCase() === '.gz') {
     if (globalOptions.gunzip) {
@@ -304,6 +297,9 @@ async function insertFile(file, index, globalOptions) {
       // Axios does not always close the data stream
       fileReader.destroy(err);
       throw err;
+    })
+    .finally(() => {
+      options.onUploadProgress.cancel();
     });
 }
 
